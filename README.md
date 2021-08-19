@@ -13,11 +13,11 @@ _How can we better develop educational materials to meet kids where they are?_
 - to understand colloquial knowledge of political concepts
 
 ### Overview:
-[x] Use NewsAPI to find top news by day
-[x] Parse news story title & article into individual words/phrases
-[x] Count most important individual words & phrases
-[] Use top 3 most important words & phrases to search TikTok & Twitter
-[] Count number of tweets & TikToks mentioning key words & phrases
+1. [x] Use NewsAPI to find top news by day
+2. [x] Parse news story title & article into individual words/phrases
+3. [x] Count most important individual words & phrases
+4. []  Use top 3 most important words & phrases to search TikTok & Twitter
+5. []  Count number of tweets & TikToks mentioning key words & phrases
 
 ## Installation & Use
 `config.ini` should have the following layout and info:
