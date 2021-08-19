@@ -1,5 +1,5 @@
-# Social Media Political Analysis
-### Springboard Open-ended Capstone Project
+# Social Media Political Analysis 🇺🇸
+### Springboard Open-ended Capstone
 
 ## Objectives
 ### Problems & Questions
