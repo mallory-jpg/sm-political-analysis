@@ -4,26 +4,26 @@
 ## Objectives
 ### Problems & Questions
 _How can we better develop educational materials to meet kids where they are?_
-- is it worth it to spend money to advertise to youth for political campaigns - are they engaging with current events?
-- what are kids talking about & why? What does our education system tell them and not tell them
+- Is it worth it to spend money to advertise to youth for political campaigns - are they engaging with current events?
+- What politics & policies are The Youth™ talking about & why?
 
 ### Goals
-- understanding how age/youth impacts political indoctrination
-- understanding social impacts of political events
+- to analyze how age/youth impacts political indoctrination and participation
+- to track social impacts of political events
 - to understand colloquial knowledge of political concepts
 
 ### Overview:
-- Use NewsAPI to find top news by day
-- Parse news story title & article into individual words/phrases
-- Count most important individual words & phrases
-- Use top 3 most important words & phrases to search TikTok & Twitter
-- Count number of tweets & TikToks mentioning key words & phrases
+[x] Use NewsAPI to find top news by day
+[x] Parse news story title & article into individual words/phrases
+[x] Count most important individual words & phrases
+[] Use top 3 most important words & phrases to search TikTok & Twitter
+[] Count number of tweets & TikToks mentioning key words & phrases
 
 ## Installation & Use
-`sm_config.ini` should have the following layout and info:
+`config.ini` should have the following layout and info:
 
   ```
-  [PostgreSQLdb]
+  [database]
   host = <hostname>
   database = <db name>
   user = <db username>
@@ -33,11 +33,27 @@ _How can we better develop educational materials to meet kids where they are?_
   api_key = <NewsAPI.org API key>
   
 [tiktokAuth]
-  api_key = <tiktok API key>
+  s_v_web_id = <s_v_web_id>
   
 [twitterAuth]
   api_key = <twitter API key>
   ```
 
-Find more information about .ini configuration files in Python documentation: https://docs.python.org/3/library/configparser.html
+### To find your `s_v_web_id` for TikTokAPI access:
+1. Go to the TikTok website & login
+2. If using Google Chrome, open the developer console 
+3. Go to the 'Application' tab 
+4. Find & click 'Cookies' in the left-hand panel → 
+5. On the resulting screen, look for s_v_web_id under the 'name' column
+
+Find more information about .ini configuration files in Python documentation: `https://docs.python.org/3/library/configparser.html`
+
+## Exploratory Data Analysis (EDA)
+
+This step was guided by my anticipation that the data will be used for trend graphing, sentiment analysis, age inference, and correlation between user characteristics and extent of participation in responding to political events. With this in mind, I plan to optimize query speed via limiting storage by geographic location of both users and events to the US (though this categorization may be loose at times because of US involvement on the world stage). My PostgreSQL database will also be sharded by datetime, as the analytical window references 3 days before and 3 days after the political event of interest. This data might also be categorized 
+
+At this point, I've found that my GET requests for popular news articles return various formats (like gzip) which must be converted, unpacked, or otherwise transformed. Because of this added step, I opted to keep the article text in a separate table within the database. The text in this table will serve as data sources from which to extract our top 3 keywords (per article) using Term Frequency-Inverse Document Frequency (TF-IDF) calculations. These keywords will be applied For some resources on this, check out
+[TF-IDF in the real world](https://towardsdatascience.com/tf-idf-for-document-ranking-from-scratch-in-python-on-real-world-dataset-796d339a4089) and [a step-by-step guide by Prachi Prakash](https://www.analyticsvidhya.com/blog/2020/11/words-that-matter-a-simple-guide-to-keyword-extraction-in-python/)
+
+With data from social media adding a pop-cultural context to political news, we inch closer to an understanding of TikTok and Twitter as novel forms of youth political engagement!
 
