@@ -150,6 +150,3 @@ connection = create_db_connection( c['database']['host'],
 execute_mogrify(connection, all_news, 'articles')
 
 
-# best_words = []
-# word_df = {}
-
