@@ -1,13 +1,14 @@
 from timer import Timer
 from database import *
 from get_news import *
+from tweets import *
 import configparser
 
 # configure ConfigParser
 c = configparser.ConfigParser()
 c.read('config.ini')
 
-# references .config credentials
+# .config credentials
 host = c['database']['host']
 username = c['database']['user']
 password = c['database']['password']
@@ -15,13 +16,24 @@ db = c['database']['database']
 
 news_api_key = c['newsAuth']['api_key']
 tiktok_id = c['tiktokAuth']['s_v_web_id']
-twitter_api_key = c['twitterAuth']['api_key']
+
+# .config twitter credentials
+access_token = c['twitterAuth']['access_token']
+access_token_secret = c['twitterAuth']['access_token_secret']
+consumer_key = c['twitterAuth']['consumer_key']
+consumer_secret = c['twitterAuth']['consumer_secret']
 
 # instantiate DataBase class using .config files
 postgres_db = DataBase(host, username, password)
-
 # instantiate News class
 news = News(news_api_key)
+# instantiate Tweet Stream Listener
+listener = TwitterStreamListener()
+# instantiate authentication
+tweets = Tweets(consumer_key, consumer_secret, access_token, access_token_secret)
+auth = tweets.tweepy_auth()
+# authenticate stream
+tweet_stream = tweepy.Stream(auth, listener)
 
 # connect to server
 postgres_server = postgres_db.create_server_connection()
@@ -29,9 +41,7 @@ postgres_server = postgres_db.create_server_connection()
 # connect to social media news db
 connection = postgres_db.create_db_connection(db)
 
-# execute defined queries to create db tables if needed
-
-
+# setup tables
 try:
     postgres_db.execute_query(connection, create_article_table)
     postgres_db.execute_query(connection, create_article_text_table)
@@ -58,8 +68,6 @@ url_text = news.all_news_df['url'].apply(
 news.article_text_df['text'] = url_text
 
 # get keywords from article text
-
-# article_text_df['keys'] = keyword_extraction(article_text)
 # get top 3 words of significance
 keywords = news.article_text_df['keywords'].apply(
     lambda row: news.get_top_n(news.tf_idf_score, 3)
@@ -70,9 +78,24 @@ news.article_text_df['keyword1'] = keywords[1]
 news.article_text_df['keyword2'] = keywords[2]
 news.article_text_df['keyword3'] = keywords[3]
 
+# filter tweet stream?
+filtered_stream = tweet_stream.filter(track=[keywords])
+# mogrify stream
+
+# tweet search
+search = tweets.tweet_search(query={
+    'tweet.fields': 'attachments,author_id,created_at,geo,id,public_metrics,source,text',
+    'expansions': 'geo.place_id,attachments.media_keys', 'place.fields': 'country,geo,id,name', 'user.fields': 'created_at,description,id,location,name,username,verified'}) 
+# count keywords
+batch_tweets = search.tweets_df['text'].str.contains(
+    keywords, case=False)
+# mogrify search 
+
+# tweet trends
+tweet_trends = tweets.tweet_trends()
+# mogrify trends
 
 # execute mogrify - insert news into database
 postgres_db.execute_mogrify(connection, news.all_news_df, 'articles')
-
 # append text and keys to database
 postgres_db.execute_mogrify(connection, news.article_text_df, 'article_text')
