@@ -24,6 +24,7 @@ class News():
         self.logger = logging.basicConfig(filename='news.log', filemode='w',
                     format=f'%(asctime)s - %(levelname)s - %(message)s')
 
+    @Timer("Popular News")
     def request_pop_news(self, params={
         'q': ['politics' or 'political' or 'law' or 'legal' or 'policy'],
         'from': {date.today() - timedelta(days=3)},
@@ -75,6 +76,7 @@ class News():
 
         return self.pop_news_df
 
+    @Timer("Top Headlines")
     def get_top_headlines(self, params={
         "language": "en",
         "country": "us"

@@ -6,32 +6,19 @@ from psycopg2 import Error
 import configparser
 from timer import Timer
 
-c = configparser.ConfigParser()
-c.read('config.ini')
-
-# config credentials
-host = c['database']['host']
-username = c['database']['user']
-password = c['database']['password']
-db = c['database']['database']
-
-
-c = configparser.ConfigParser()
-c.read('config.ini')
-
-# references .config credentials
-host = c['database']['host']
-username = c['database']['user']
-password = c['database']['password']
-db = c['database']['database']
 
 
 class DataBase():
-    def __init__(self, host_name, user_name, user_password):
+    
+    def __init__(self, host_name, user_name, user_password, logger=logging):
         self.host_name = host_name
         self.user_name = user_name
         self.user_password = user_password
+        # self.logger = logging.basicConfig(filename='db.log', filemode='w',
+        #                                               format=f'%(asctime)s - %(levelname)s - %(message)s')
 
+        self.logger = logging.getLogger(__name__)
+    @Timer("Server cxn")
     def create_server_connection(self):
         self.connection = None
         try:
@@ -56,7 +43,7 @@ class DataBase():
             except Error as err:
                 logging.error(f"Error: '{err}'")
 
-
+    @Timer("Database cxn")
     def create_db_connection(self, db_name):
             self.db_name = db_name
             self.connection = None
@@ -68,7 +55,7 @@ class DataBase():
                     database=self.db_name
                 )
                 # cursor = connection.cursor()
-                logging.info("PostgreSQL Database connection successful")
+                logging.info("Database connection successful")
             except Error as err:
                 logging.error(f"Error: '{err}'")
 
