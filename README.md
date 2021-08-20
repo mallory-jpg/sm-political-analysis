@@ -4,13 +4,13 @@
 ## Objectives
 ### Problems & Questions
 _How can we better develop educational materials to meet kids where they are?_
-- Is it worth it to spend money to advertise to youth for political campaigns - are they engaging with current events?
-- What politics & policies are The Youth™ talking about & why?
+* Is it worth it to spend money to advertise to youth for political campaigns - are they engaging with current events?
+* What politics & policies are The Youth™ talking about & why?
 
 ### Goals
-- to analyze how age/youth impacts political indoctrination and participation
-- to track social impacts of political events
-- to understand colloquial knowledge of political concepts
+* to analyze how age/youth impacts political indoctrination and participation
+* to track social impacts of political events
+* to understand colloquial knowledge of political concepts
 
 ### Overview:
 1. [x] Use NewsAPI to find top news by day
@@ -29,14 +29,17 @@ _How can we better develop educational materials to meet kids where they are?_
   user = <db username>
   password = <db password>
   
-[newsAuth]
-  api_key = <NewsAPI.org API key>
-  
-[tiktokAuth]
-  s_v_web_id = <s_v_web_id>
-  
-[twitterAuth]
-  api_key = <twitter API key>
+  [newsAuth]
+    api_key = <NewsAPI.org API key>
+
+  [tiktokAuth]
+    s_v_web_id = <s_v_web_id>
+
+  [twitterAuth]
+    access_token = <access_token>
+    access_token_secret = <access_token_secret>
+    consumer_key = <consumer_key>
+    consumer_secret = <consumer_secret>
   ```
 
 ### To find your `s_v_web_id` for TikTokAPI access:
@@ -48,7 +51,7 @@ _How can we better develop educational materials to meet kids where they are?_
 
 Find more information about .ini configuration files in Python documentation: `https://docs.python.org/3/library/configparser.html`
 
-## Exploratory Data Analysis (EDA)
+## Exploratory Data Analysis
 
 This step was guided by my anticipation that the data will be used for trend graphing, sentiment analysis, age inference, and correlation between user characteristics and extent of participation in responding to political events. With this in mind, I plan to optimize query speed via limiting storage by geographic location of both users and events to the US (though this categorization may be loose at times because of US involvement on the world stage). My PostgreSQL database will also be sharded by datetime, as the analytical window references 3 days before and 3 days after the political event of interest.
 
@@ -57,3 +60,5 @@ At this point, I've found that my GET requests for popular news articles return 
 
 With data from social media adding a pop-cultural context to political news, we inch closer to an understanding of TikTok and Twitter as novel forms of youth political engagement!
 
+Check out this project's slide deck ⤵
+⚠️⚠️⚠️ Coming Soon ⚠️⚠️⚠️
