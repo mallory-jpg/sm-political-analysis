@@ -13,7 +13,7 @@ from nltk.tokenize import word_tokenize
 from operator import itemgetter
 import math
 from bs4 import BeautifulSoup
-from django.db import DatabaseError
+# from django.db import DatabaseError
 
 # best_words = []
 # word_df = {}

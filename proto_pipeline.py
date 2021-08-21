@@ -3,6 +3,7 @@ from database import *
 from get_news import *
 from tweets import *
 import configparser
+import psycopg2
 
 # configure ConfigParser
 c = configparser.ConfigParser()
@@ -45,7 +46,9 @@ connection = postgres_db.create_db_connection(db)
 try:
     postgres_db.execute_query(connection, create_article_table)
     postgres_db.execute_query(connection, create_article_text_table)
-    postgres_db.execute_query(connection, create_tweets_table)
+    postgres_db.execute_query(connection, create_batch_tweets_table)
+    postgres_db.execute_query(connection, create_stream_tweets_table)
+    postgres_db.execute_query(connection, create_tweet_trends_table)
     postgres_db.execute_query(connection, create_political_event_table)
 
     postgres_db.execute_query(connection, create_tiktok_sounds_table)
@@ -81,19 +84,27 @@ news.article_text_df['keyword3'] = keywords[3]
 # filter tweet stream?
 filtered_stream = tweet_stream.filter(track=[keywords])
 # mogrify stream
+postgres_db.execute_mogrify(connection, filtered_stream, 'stream_tweets')
 
 # tweet search
 search = tweets.tweet_search(query={
     'tweet.fields': 'attachments,author_id,created_at,geo,id,public_metrics,source,text',
     'expansions': 'geo.place_id,attachments.media_keys', 'place.fields': 'country,geo,id,name', 'user.fields': 'created_at,description,id,location,name,username,verified'})
-# count keywords in tweet search df
+# change to datetime
+tweets.tweet_search_df['created_at'].apply(
+    lambda row: datetime.strptime(
+        row, '%Y-%m-%d %H:%M:%S'),  # TODO check formatting
+    axis=0)
+# count keywords in tweet search df 
 batch_tweets = tweets.tweet_search_df['text'].str.contains(
     keywords, case=False)
-# mogrify search 
+# mogrify tweets with keywords 
+postgres_db.execute_mogrify(connection, batch_tweets, 'batch_tweets')
 
 # tweet trends
 tweet_trends = tweets.tweet_trends()
 # mogrify trends
+postgres_db.execute_mogrify(connection, tweet_trends, 'tweet_trends')
 
 # execute mogrify - insert news into database
 postgres_db.execute_mogrify(connection, news.all_news_df, 'articles')

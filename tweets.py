@@ -129,8 +129,6 @@ class TwitterStreamListener(tweepy.StreamListener):
                 # flatten data to dataframe
                 # tweets = pd.json_normalize(self.tweet_list, record_path=['articles'])
                 self.tweets_df = pd.DataFrame(self.tweet_list, columns=["tweet_id", "publishedAt", "userID", "text", "location"])
-                self.tweets_df['created_at'] = pd.to_datetime(self.tweets_df['created_at']) #TODO .apply method
-                self.tweets_df.dropna(axis=0, how='any')
 
                 return self.tweets_df
             

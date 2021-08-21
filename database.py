@@ -158,8 +158,29 @@ create_political_event_table = """
         keyWords VARCHAR
         );
     """
-create_tweets_table = """
-    CREATE TABLE IF NOT EXISTS tweets (
+    # TODO clean df tables so they match 
+create_batch_tweets_table = """
+    CREATE TABLE IF NOT EXISTS batch_tweets (
+        tweet_id INT PRIMARY KEY,
+        created_at DATE NOT NULL,
+        userID INT NOT NULL,
+        tweet VARCHAR NOT NULL,
+        location VARCHAR NOT NULL, 
+        tags VARCHAR NOT NULL
+        );
+    """
+create_stream_tweets_table = """
+    CREATE TABLE IF NOT EXISTS stream_tweets (
+        tweet_id INT PRIMARY KEY,
+        publishedAt DATE NOT NULL,
+        userID INT NOT NULL,
+        tweet VARCHAR NOT NULL,
+        location VARCHAR NOT NULL, 
+        tags VARCHAR NOT NULL
+        );
+    """
+create_tweet_trends_table = """
+    CREATE TABLE IF NOT EXISTS tweets_trends (
         tweet_id INT PRIMARY KEY,
         publishedAt DATE NOT NULL,
         userID INT NOT NULL,
