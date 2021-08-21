@@ -48,23 +48,34 @@ class Tweets():
         self.logger.info("Tweepy API Authenticated")
     
     def tweet_search(self, query):
+        """Search for tweets within previous 7 days.
+            Inputs: 
+                https-encoded query
+                language
+                'until' date
+                geocode (latitude/longitude)
+            Returns: 
+                Tweet object
+        """
+        self.tweet_search_list = []
         query = urllib.parse.urlencode(query)
-        # returns Tweet Obj
+        # latitude & longitude of Colombus, OH, USA
         latitude = '39.9828671'
         longitude = '-83.1309131'
+        # radius of united states
         radius = '3881mi'
 
+        query_result = tweepy.Cursor(self.api, q=query, lang='en', until={
+                                     date.today()}, geocode=[latitude, longitude, radius])
+
+        for status in tweepy.Cursor(query_result).items():
+            self.tweet_search_list.append(status)
+            return self.tweet_search_list
+
         # TODO append tweets to dataframe & return it
+        self.tweet_search_df = pd.DataFrame(self.tweet_search_list)
+        return self.tweet_search_df
         
-        return tweepy.Cursor(self.api, q=query, lang='en', until={date.today()}, geocode=[latitude, longitude, radius])
-        #self.api.search(q=query, lang='en', geocode='', until={date.today()})
-
-    def tweet_trends(self):
-        # returns JSON
-        # 1 refers to USA WOEID 
-        tweepy.Cursor(self.api.trends_place(1))
-
-        #TODO append to dataframe
 
 # define stream listener class
 class TwitterStreamListener(tweepy.StreamListener):
