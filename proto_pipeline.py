@@ -2,6 +2,7 @@ from timer import Timer
 from database import *
 from get_news import *
 from tweets import *
+from tiktoks import *
 import configparser
 import psycopg2
 
