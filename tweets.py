@@ -76,6 +76,19 @@ class Tweets():
         self.tweet_search_df = pd.DataFrame(self.tweet_search_list)
         return self.tweet_search_df
         
+    def tweet_trends(self):
+            # returns JSON
+        # 1 refers to USA WOEID 
+        self.tweet_trends_list = []
+        result = tweepy.Cursor(self.api.trends_place(1))
+
+        for trend in tweepy.Cursor(result).items():
+            self.tweet_trends_list.append(trend)
+            return self.tweet_trends_list
+        
+        #TODO append to dataframe
+        self.tweet_trends_df = pd.DataFrame(self.tweet_trends_list)
+        return self.tweet_trends_df    
 
 # define stream listener class
 class TwitterStreamListener(tweepy.StreamListener):

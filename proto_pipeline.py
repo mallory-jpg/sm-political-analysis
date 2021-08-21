@@ -85,9 +85,9 @@ filtered_stream = tweet_stream.filter(track=[keywords])
 # tweet search
 search = tweets.tweet_search(query={
     'tweet.fields': 'attachments,author_id,created_at,geo,id,public_metrics,source,text',
-    'expansions': 'geo.place_id,attachments.media_keys', 'place.fields': 'country,geo,id,name', 'user.fields': 'created_at,description,id,location,name,username,verified'}) 
-# count keywords
-batch_tweets = search.tweets_df['text'].str.contains(
+    'expansions': 'geo.place_id,attachments.media_keys', 'place.fields': 'country,geo,id,name', 'user.fields': 'created_at,description,id,location,name,username,verified'})
+# count keywords in tweet search df
+batch_tweets = tweets.tweet_search_df['text'].str.contains(
     keywords, case=False)
 # mogrify search 
 
