@@ -11,7 +11,7 @@ tiktok_config.read('config.ini')
 
 fp = tiktok_config['tiktokAuth']['s_v_web_id']
 
-# instanstiate class
+# instantiate class
 
 tiktoks = TikTokApi.get_instance(custom_verifyFp=fp, use_test_endpoints=True)
 
