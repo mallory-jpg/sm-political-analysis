@@ -6,71 +6,118 @@ from psycopg2 import Error
 import configparser
 from timer import Timer
 
-c = configparser.ConfigParser()
-c.read('config.ini')
-
-# config credentials
-host = c['database']['host']
-username = c['database']['user']
-password = c['database']['password']
-db = c['database']['database']
 
 
-# class dbSetup:
+class DataBase():
+    
+    def __init__(self, host_name, user_name, user_password, logger=logging):
+        self.host_name = host_name
+        self.user_name = user_name
+        self.user_password = user_password
+        # self.logger = logging.basicConfig(filename='db.log', filemode='w',
+        #                                               format=f'%(asctime)s - %(levelname)s - %(message)s')
 
-def create_server_connection(host_name, user_name, user_password):
-        connection = None
+        self.logger = logging.getLogger(__name__)
+    @Timer("Server cxn")
+    def create_server_connection(self):
+        self.connection = None
         try:
-            connection = psycopg2.connect(
-                host=host_name,
-                user=user_name,
-                passwd=user_password
+            self.connection = psycopg2.connect(
+                host=self.host_name,
+                user=self.user_name,
+                password=self.user_password
             )
-            logging.info("PostgreSQL Database connection successful")
+            logging.info("Database connection successful")
         except Error as err:
             logging.error(f"Error: '{err}'")
 
-        return connection
+        return self.connection
 
 
-def create_database(connection, query):
-        cursor = connection.cursor()
+    def create_database(self, connection, query):
+            self.connection = connection
+            cursor = connection.cursor()
+            try:
+                cursor.execute(query)
+                logging.info("Database created successfully")
+            except Error as err:
+                logging.error(f"Error: '{err}'")
+
+    @Timer("Database cxn")
+    def create_db_connection(self, db_name):
+            self.db_name = db_name
+            self.connection = None
+            try:
+                connection = psycopg2.connect(
+                    host=self.host_name,
+                    user=self.user_name,
+                    password=self.user_password,
+                    database=self.db_name
+                )
+                # cursor = connection.cursor()
+                logging.info("Database connection successful")
+            except Error as err:
+                logging.error(f"Error: '{err}'")
+
+            return self.connection
+
+    @Timer(name='Query Execution')
+    def execute_query(self, connection, query):
+            self.connection = connection
+            cursor = self.connection.cursor()
+            try:
+                cursor.execute(query)
+                self.connection.commit()
+                logging.info("Query successful")
+            except Error as err:
+                print(f"Error: '{err}'")
+    
+    def read_query(self, connection, query):
+        self.connection = connection
+        cursor = self.connection.cursor()
+        result = None
         try:
             cursor.execute(query)
-            logging.info("Database created successfully")
+            result = cursor.fetchall()
+            return result
         except Error as err:
             logging.error(f"Error: '{err}'")
 
+    @Timer(name='Mogrify')
+    def execute_mogrify(self, conn, df, table):
+        """
+        Using cursor.mogrify() to build the bulk insert query
+        then cursor.execute() to execute the query
+        """
+        self.connection = conn
+        # Create a list of tupples from the dataframe values
+        tuples = [tuple(x) for x in df.to_numpy()]
+    
+        # Comma-separated dataframe columns
+        cols = ','.join(list(df.columns))
+    
+        # SQL query to execute
+        cursor = conn.cursor()
+        values = [cursor.mogrify("(%s,%s,%s,%s)", tup).decode('utf8')
+                for tup in tuples]
+        # if not publishedAt, delete record
+        query = "INSERT INTO %s(%s) VALUES" % (table, cols) + ",".join(values)
 
-def create_db_connection(host_name, user_name, user_password, db_name):
-        connection = None
         try:
-            connection = psycopg2.connect(
-                host=host_name,
-                user=user_name,
-                password=user_password,
-                database=db_name
-            )
-            # cursor = connection.cursor()
-            logging.info("PostgreSQL Database connection successful")
-        except Error as err:
-            logging.error(f"Error: '{err}'")
+            cursor.execute(query, tuples)
+            conn.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            logging.error("Error: %s" % error)
+            print("Error: %s" % error)
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            return 1
+        logging.info("execute_mogrify() done")
+        cursor.close()
+        conn.close()
 
-        return connection
-
-@Timer(name='Query Execution')
-def execute_query(connection, query):
-        cursor = connection.cursor()
-        try:
-            cursor.execute(query)
-            connection.commit()
-            logging.info("Query successful")
-        except Error as err:
-            print(f"Error: '{err}'")
-
-    # connect to server
-server = create_server_connection(host, username, password)
-
+# DDL queries
 create_database_query = """
         CREATE DATABASE IF NOT EXISTS sm_news; 
     """
@@ -111,8 +158,29 @@ create_political_event_table = """
         keyWords VARCHAR
         );
     """
-create_tweets_table = """
-    CREATE TABLE IF NOT EXISTS tweets (
+    # TODO clean df tables so they match 
+create_batch_tweets_table = """
+    CREATE TABLE IF NOT EXISTS batch_tweets (
+        tweet_id INT PRIMARY KEY,
+        created_at DATE NOT NULL,
+        userID INT NOT NULL,
+        tweet VARCHAR NOT NULL,
+        location VARCHAR NOT NULL, 
+        tags VARCHAR NOT NULL
+        );
+    """
+create_stream_tweets_table = """
+    CREATE TABLE IF NOT EXISTS stream_tweets (
+        tweet_id INT PRIMARY KEY,
+        publishedAt DATE NOT NULL,
+        userID INT NOT NULL,
+        tweet VARCHAR NOT NULL,
+        location VARCHAR NOT NULL, 
+        tags VARCHAR NOT NULL
+        );
+    """
+create_tweet_trends_table = """
+    CREATE TABLE IF NOT EXISTS tweets_trends (
         tweet_id INT PRIMARY KEY,
         publishedAt DATE NOT NULL,
         userID INT NOT NULL,
@@ -173,45 +241,3 @@ delete_bad_data = """
     DELETE FROM articles
         WHERE publishedAt IS NULL;
     """
-
-
-def read_query(connection, query):
-        cursor = connection.cursor()
-        result = None
-        try:
-            cursor.execute(query)
-            result = cursor.fetchall()
-            return result
-        except Error as err:
-            print(f"Error: '{err}'")
-
-@Timer(name='Mogrify')
-def execute_mogrify(conn, df, table):
-        """
-        Using cursor.mogrify() to build the bulk insert query
-        then cursor.execute() to execute the query
-        """
-        # Create a list of tupples from the dataframe values
-        tuples = [tuple(x) for x in df.to_numpy()]
-        # Comma-separated dataframe columns
-        cols = ','.join(list(df.columns))
-        # SQL query to execute
-        cursor = conn.cursor()
-        values = [cursor.mogrify("(%s,%s,%s,%s)", tup).decode('utf8')
-                for tup in tuples]
-        # if not publishedAt, delete record
-        query = "INSERT INTO %s(%s) VALUES" % (table, cols) + ",".join(values)
-
-        try:
-            cursor.execute(query, tuples)
-            conn.commit()
-        except (Exception, psycopg2.DatabaseError) as error:
-            logging.error("Error: %s" % error)
-            print("Error: %s" % error)
-            conn.rollback()
-            cursor.close()
-            conn.close()
-            return 1
-        logging.info("execute_mogrify() done")
-        cursor.close()
-        conn.close()

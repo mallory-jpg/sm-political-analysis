@@ -1,3 +1,5 @@
+""""Extract keywords from  news articles to use as search values for TikTok & Twitter posts relating to the political event of interest. """
+
 from numpy import datetime64
 from database import *
 import logging
@@ -5,148 +7,217 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 import json
 import requests
+from nltk import tokenize
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from operator import itemgetter
+import math
+from bs4 import BeautifulSoup
+# from django.db import DatabaseError
 
-# configure logger
-logging.basicConfig(filename='news.log', filemode='w',
+# best_words = []
+# word_df = {}
+
+class News():
+    def __init__(self, api_key, logger=logging):
+        self.api_key = api_key
+        self.logger = logging.basicConfig(filename='news.log', filemode='w',
                     format=f'%(asctime)s - %(levelname)s - %(message)s')
 
-# connect to db
-connection = create_db_connection(host, username, password, db)
-
-# execute defined queries to create db tables
-execute_query(connection, create_article_table)
-execute_query(connection, create_tweets_table)
-execute_query(connection, create_political_event_table)
-execute_query(connection, create_tiktok_sounds_table)
-execute_query(connection, create_tiktok_music_table)
-
-execute_query(connection, create_tiktok_stats_table)  # not running?
-execute_query(connection, create_tiktok_tags_table)
-execute_query(connection, create_tiktoks_table)
-
-pop_news = []
-top_headlines = []
-best_words = []
-word_df = {}
-
-
-def request_pop_news():
-    
-    params = {
+    @Timer("Popular News")
+    def request_pop_news(self, params={
         'q': ['politics' or 'political' or 'law' or 'legal' or 'policy'],
         'from': {date.today() - timedelta(days=3)},
         'to': {date.today},
         'language': 'en',
         'sort_by': 'popularity'
-    }
+    }):
+        self.pop_news = []
+        self.params = params
 
-    headers = {
-        'X-Api-Key': c['newsAuth']['api_key']
-    }
+        headers = {
+            'X-Api-Key': self.api_key
+        }
 
-    url = 'https://newsapi.org/v2/everything'
+        url = 'https://newsapi.org/v2/everything'
 
-    # response as JSON dict
-    response = requests.get(url, params=params, headers=headers).json()
+        # response as JSON dict
+        response = requests.get(url, params=self.params, headers=headers).json()
 
-    with open('pop_news.json', 'w') as f:
-        # write results to JSON file
-        json.dump(response, f)
+        with open('pop_news.json', 'w') as f:
+            # write results to JSON file
+            json.dump(response, f)
 
-    with open('pop_news.json', 'r') as file:
-        # create Python list object from JSON
-        pop_news_json = file.read().split("\n")
+        with open('pop_news.json', 'r') as file:
+            # create Python list object from JSON
+            pop_news_json = file.read().split("\n")
 
-        for story in pop_news_json:
-            pop_obj = json.loads(story)
+            for story in pop_news_json:
+                pop_obj = json.loads(story)
 
-            if 'title' in pop_obj:
-                pop_obj['title'] = pop_obj['articles']['title']
-            if 'author' in pop_obj:
-                pop_obj['author'] = pop_obj['articles']['author']
-            if 'url' in pop_obj:
-                pop_obj['url'] = pop_obj['articles']['url']
-            if 'publishedAt' in pop_obj:
-                pop_obj['publishedAt'] = pop_obj['articles']['publishedAt']
+                if 'title' in pop_obj:
+                    pop_obj['title'] = pop_obj['articles']['title']
+                if 'author' in pop_obj:
+                    pop_obj['author'] = pop_obj['articles']['author']
+                if 'url' in pop_obj:
+                    pop_obj['url'] = pop_obj['articles']['url']
+                if 'publishedAt' in pop_obj:
+                    pop_obj['publishedAt'] = pop_obj['articles']['publishedAt']
 
-            # add info to pop_news dict
-            pop_news.append(pop_obj)
+                # add info to pop_news dict
+                self.pop_news.append(pop_obj)
+        
+        # load returned results into Pandas dataframe
+        # flatten data to dataframe
+        pop_news = pd.json_normalize(self.pop_news, record_path=['articles'])
+        self.pop_news_df = pd.DataFrame(
+                pop_news, columns=['title', 'author', 'url', 'publishedAt'])
+        self.pop_news_df.dropna(axis=0, how='any')
 
-        return pop_news
+        return self.pop_news_df
 
-
-def get_top_headlines():
-    params = {
+    @Timer("Top Headlines")
+    def get_top_headlines(self, params={
         "language": "en",
         "country": "us"
-    }
-    headers = {
-        "X-Api-Key": c['newsAuth']['api_key']
-    }
-    url = "https://newsapi.org/v2/top-headlines"
+    }):
 
-    response = requests.get(
-        url, params=params, headers=headers).json()  # response JSON dict
+        self.top_headlines = []
+        self.params = params
 
-    with open("top_headlines.json", "w") as f:
-        # write results to JSON file
-        json.dump(response, f)
+        headers = {
+            "X-Api-Key": self.api_key
+        }
+        url = "https://newsapi.org/v2/top-headlines"
 
-    with open("top_headlines.json", "r") as file:
-        # create Python object from JSON
-        top_headlines_json = file.read().split("\n")
+        response = requests.get(
+            url, params=self.params, headers=headers).json()  # response JSON dict
 
-        for story in top_headlines_json:
-            story_obj = json.loads(story)
+        with open("top_headlines.json", "w") as f:
+            # write results to JSON file
+            json.dump(response, f)
 
-            if 'title' in story_obj:
-                story_obj["title"] = story_obj["articles"]["title"]
-            if 'author' in story_obj:
-                story_obj["author"] = story_obj["articles"]["author"]
-            if 'url' in story_obj:
-                story_obj["url"] = story_obj["articles"]["url"]
-            if 'publishedAt' in story_obj:
-                story_obj["publishedAt"] = story_obj["articles"]["publishedAt"]
+        with open("top_headlines.json", "r") as file:
+            # create Python object from JSON
+            top_headlines_json = file.read().split("\n")
 
-            # add info to top_headlines list/dict
-            top_headlines.append(story_obj)
+            for story in top_headlines_json:
+                story_obj = json.loads(story)
 
-        return top_headlines
+                if 'title' in story_obj:
+                    story_obj["title"] = story_obj["articles"]["title"]
+                if 'author' in story_obj:
+                    story_obj["author"] = story_obj["articles"]["author"]
+                if 'url' in story_obj:
+                    story_obj["url"] = story_obj["articles"]["url"]
+                if 'publishedAt' in story_obj:
+                    story_obj["publishedAt"] = story_obj["articles"]["publishedAt"]
 
+                # add info to top_headlines list/dict
+                self.top_headlines.append(story_obj)
+            
+        # flatten data to dataframe
+        top_headlines = pd.json_normalize(self.top_headlines, record_path=['articles'])
+        self.top_headlines_df = pd.DataFrame(
+                top_headlines, columns=["title", "author", "url", "publishedAt"])
+        self.top_headlines_df.dropna(axis=0, how='any')
 
-# call function
-request_pop_news()
+        return self.top_headlines_df
 
-# load function call results into Pandas dataframe
-# flatten data to dataframe
-pop_news = pd.json_normalize(pop_news, record_path=['articles'])
-pop_news_df = pd.DataFrame(
-    pop_news, columns=['title', 'author', 'url', 'publishedAt'])
-pop_news_df = pop_news_df.dropna(axis=0, how='any')
-pop_news_df.head()
+    # put all news together
+    def all_news(self):
+        # call class functions
+        top_headlines = self.get_top_headlines()
+        pop_news = self.request_pop_news()
 
-# flatten data to dataframe
-get_top_headlines()
-top_headlines = pd.json_normalize(top_headlines, record_path=['articles'])
-top_headlines_df = pd.DataFrame(
-    top_headlines, columns=["title", "author", "url", "publishedAt"])
-top_headlines_df = top_headlines_df.dropna(axis=0, how='any')
+        # combine result dfs
+        self.all_news_df = pd.concat([top_headlines, pop_news])
 
-# top_headlines_df.head(20)
+        # convert to datetime
+        self.all_news_df['publishedAt'] = self.all_news_df['publishedAt'].apply(
+            lambda row: datetime.strptime(row, '%Y-%m-%d %H:%M:%S'), # TODO check formatting
+            axis=0)
 
-# put all news together
-all_news = pd.concat([top_headlines_df, pop_news_df])
+        return self.all_news_df
 
-# convert to datetime
-all_news['publishedAt'] = all_news['publishedAt'].apply(
-    lambda row: datetime.strptime(row, '%Y-%m-%d %H:%M:%S'), #check formatting
-    axis=0)
+    
+    def article_text(self, url):
+        """Get news article text using Requests and BeautifulSoup"""
+        #create dataframe to store text
+        self.article_text_df = pd.DataFrame({'index': '',
+                                'title': '',
+                                'text': '',
+                                'keyword1': '',
+                                'keyword2': '',
+                                'keyword3': ''
+                                })
 
-# execute mogrify
-connection = create_db_connection( c['database']['host'], 
-                                    c['database']['user'], 
-                                    c['database']['password'], 
-                                    c['database']['database'])
-execute_mogrify(connection, all_news, 'articles')
+        r = requests.get(url)
+        html = r.text
+        soup = BeautifulSoup(html)
+        text = soup.get_text()
 
+        return text
 
+    def keyword_extraction(self, text):
+        """Determine weight of important words in articles and add to articles_text table
+        using TF-IDF ranking"""
+
+        # make sure text is in string format for parsing
+        text = str(text)
+        stop_words = set(stopwords.words('english'))
+
+        # find total words in document for calculating Term Frequency (TF)
+        total_words = text.split()
+        total_word_length = len(total_words)
+
+        # find total number of sentences for calculating Inverse Document Frequency
+        total_sentences = tokenize.sent_tokenize(text)
+        total_sent_len = len(total_sentences)
+
+        # calculate TF for each word
+        self.tf_score = {}
+        for each_word in total_words:
+            each_word = each_word.replace('.', '')
+            if each_word not in stop_words:
+                if each_word in self.tf_score:
+                    self.tf_score[each_word] += 1
+                else:
+                    self.tf_score[each_word] = 1
+
+        # Divide by total_word_length for each dictionary element
+        self.tf_score.update((x, y/int(total_word_length))
+                        for x, y in self.tf_score.items())  # test - ZeroError
+
+        #calculate IDF for each word
+        self.idf_score = {}
+        for each_word in total_words:
+            each_word = each_word.replace('.', '')
+            if each_word not in stop_words:
+                if each_word in self.idf_score:
+                    self.idf_score[each_word] = self.check_sent(each_word, total_sentences)
+                else:
+                    self.idf_score[each_word] = 1
+
+        # Performing a log and divide
+        self.idf_score.update((x, math.log(int(total_sent_len)/y))
+                        for x, y in self.idf_score.items())
+
+        # Calculate IDF * TF for each word
+        self.tf_idf_score = {key: self.tf_score[key] *
+                        self.idf_score.get(key, 0) for key in self.tf_score.keys()}
+
+        return self.tf_idf_score
+
+    def check_sent(self, word, sentences):
+        """Check if word is present in sentence list for calculating IDF (Inverse Document Frequency)"""
+        final = [all([w in x for w in word]) for x in sentences]
+        sent_len = [sentences[i] for i in range(0, len(final)) if final[i]]
+    
+        return int(len(sent_len))
+
+    def get_top_n(self, dict_elem, n):
+        """Calculate most important keywords in text of interest"""
+        result = dict(sorted(dict_elem.items(),
+                    key=itemgetter(1), reverse=True)[:n])
+        return result
