@@ -65,7 +65,6 @@ At this point, I've found that my GET requests for popular news articles return 
 With data from social media adding a pop-cultural context to political news, we inch closer to an understanding of TikTok and Twitter as novel forms of youth political engagement!
 
 Check out this project's slide deck ⤵
-![SM Political Analysis - 4](https://user-images.githubusercontent.com/65197541/131225590-b910943c-38f6-45f6-a510-f415b858c97d.png)
 ![SM Political Analysis - 4](https://user-images.githubusercontent.com/65197541/131225592-9e8dd0a0-1750-408f-93d8-72ca04e88e1a.png)
 ![SM Political Analysis - 4 (2)](https://user-images.githubusercontent.com/65197541/131225593-367e0894-08d3-4fea-ab17-36f274e03c64.png)
 ![SM Political Analysis - 4 (3)](https://user-images.githubusercontent.com/65197541/131225596-0732e1a6-f25a-4fae-a383-40ff2e134fe4.png)
