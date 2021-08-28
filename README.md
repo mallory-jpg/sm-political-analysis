@@ -65,8 +65,14 @@ At this point, I've found that my GET requests for popular news articles return 
 With data from social media adding a pop-cultural context to political news, we inch closer to an understanding of TikTok and Twitter as novel forms of youth political engagement!
 
 Check out this project's slide deck ⤵
-
-<figure class="video_container">
-<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSsP1VttwV73M6ntQdD9uTq4L3XKvfBuHuB8uRGJ2zP0xMoKXAS_WsshHI869rf6AYDT18fpNWGfN8Z/embed?start=false&loop=false&delayms=10000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
-</figure>
-
+![SM Political Analysis - 4](https://user-images.githubusercontent.com/65197541/131225590-b910943c-38f6-45f6-a510-f415b858c97d.png)
+![SM Political Analysis - 4](https://user-images.githubusercontent.com/65197541/131225592-9e8dd0a0-1750-408f-93d8-72ca04e88e1a.png)
+![SM Political Analysis - 4 (2)](https://user-images.githubusercontent.com/65197541/131225593-367e0894-08d3-4fea-ab17-36f274e03c64.png)
+![SM Political Analysis - 4 (3)](https://user-images.githubusercontent.com/65197541/131225596-0732e1a6-f25a-4fae-a383-40ff2e134fe4.png)
+![SM Political Analysis - 4 (4)](https://user-images.githubusercontent.com/65197541/131225599-038ec36c-d644-4f60-a8f2-0bd43ade94df.png)
+![SM Political Analysis - 4 (7)](https://user-images.githubusercontent.com/65197541/131225638-ba49f6d7-a3e1-46bc-8b54-a71b319b8990.png)
+![SM Political Analysis - 4 (8)](https://user-images.githubusercontent.com/65197541/131225639-88301e11-ed3c-4ab0-8b11-2cbd95d0677c.png)
+![SM Political Analysis - 4 (9)](https://user-images.githubusercontent.com/65197541/131225641-d1427eb3-439e-4691-9f3d-9eb9b7cbc2b8.png)
+![SM Political Analysis - 4 (10)](https://user-images.githubusercontent.com/65197541/131225642-20b9ca15-5777-474a-a13d-0693c7b74db3.png)
+![SM Political Analysis - 4 (11)](https://user-images.githubusercontent.com/65197541/131225643-0ff23457-eada-4b2a-98d0-256e8ecd5df7.png)
+![SM Political Analysis - 4 (12)](https://user-images.githubusercontent.com/65197541/131225654-089ce37f-7f7d-42b9-8972-5dba199252f8.png)
