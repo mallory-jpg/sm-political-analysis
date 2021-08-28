@@ -1,27 +1,31 @@
 from TikTokApi import TikTokApi
 # pip install TikTokApi --upgrade
-from proto_pipeline import keywords
+# from proto_pipeline import keywords
 import configparser
 import json
 import pandas as pd
 from timer import Timer
+from news import *
 
-tiktok_config = configparser.ConfigParser()
-tiktok_config.read('config.ini')
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-fp = tiktok_config['tiktokAuth']['s_v_web_id']
+fp = config['tiktokAuth']['s_v_web_id']
+news_api_key = config['newsAuth']['api_key']
 
 # instantiate class
+news = News(news_api_key)
 
-tiktoks = TikTokApi.get_instance(custom_verifyFp=fp, use_test_endpoints=True)
+news.get_all_news()
 
 class TikToks(TikTokApi):
     def __init__(self):
         super(TikTokApi, self).__init__()
         self.tiktok_list = []
+        self.custom_verifyFp = True
 
-    @Timer("Tiktok Download")
-    def get_tiktok_trends(self):
+    # @Timer("Tiktok Download")
+    def get_tiktok_trends(self, keywords):
         # returns tiktok dictionary/JSON
         self.api = TikTokApi()
         trends = self.api.by_hashtag(keywords)
@@ -71,3 +75,7 @@ class TikToks(TikTokApi):
 
         return self.toks_df
 
+
+tiktoks = TikToks()
+tiktoks.get_instance(custom_verifyFp=fp, use_test_endpoints=True)
+# tiktoks.get_tiktok_trends('politics')

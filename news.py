@@ -1,34 +1,31 @@
 """Compute weight of words in articles and titles"""
 
 # from django.db import DatabaseError
-from get_news import *
+# from get_news import *
 import requests
 from bs4 import BeautifulSoup
-from database import *
+# from database import *
 import logging
 import re
 from nltk import sent_tokenize, tokenize
+from nltk.corpus import stopwords
 import nltk
+from datetime import datetime, date, timedelta
+import json
+import pandas as pd
+import math
+from operator import itemgetter
+import numpy as np
 # from keywords import *
+import configparser
+from helper_functions import get_random_ua
 
-# make sure .txt of user agents is in directory
-def get_random_ua(browser):
-    random_ua = ''
-    ua_file = f'{browser}.txt'.title()
+# TODO to get events -> group by itertools combinations of keywords - if it has a combination of all three keywords then group together
 
-    try:
-        with open(ua_file) as f:
-            lines = f.readlines()
-        if len(lines) > 0:
-            prng = np.random.RandomState()
-            index = prng.permutation(len(lines) - 1)
-            idx = np.asarray(index, dtype=np.integer)[0]
-            random_proxy = lines[int(idx)]
-    except Exception as ex:
-        logging('Exception in random_ua')
-        print(str(ex))
-    finally:
-        return random_ua
+c = configparser.ConfigParser()
+c.read('config.ini')
+
+news_api_key = c['newsAuth']['api_key']
 
 class News():
     """Extract keywords from  news articles to use as search values for TikTok & Twitter posts relating to the political event of interest. """
@@ -94,7 +91,7 @@ class News():
         self.params = params
 
         headers = {
-            "X-Api-Key": self.api_key,
+            "X-Api-Key": news_api_key,
             "user-agent": get_random_ua('Chrome')
         }
         url = "https://newsapi.org/v2/top-headlines"
@@ -133,31 +130,44 @@ class News():
         top_headlines = self.get_top_headlines()
         pop_news = self.request_pop_news()
 
+        # noramlize nested JSON
         pop_news = pd.json_normalize(pop_news, record_path=['articles'])
         top_headlines = pd.json_normalize(
             top_headlines, record_path=['articles'])
         all_news = top_headlines.append(pop_news)
+
+        # create dataframe from combined news list
         self.all_news_df = pd.DataFrame(
-            all_news, columns=['title', 'author', 'url', 'publishedAt', "text", "keyword1", "keyword2", "keyword3"])
+            all_news, columns=['title', 'author', 'url', 'publishedAt', "text"])
         self.all_news_df.drop_duplicates()
 
         # convert to datetime
         self.all_news_df['publishedAt'] = self.all_news_df['publishedAt'].map(
             lambda row: datetime.strptime(str(row), "%Y-%m-%dT%H:%M:%SZ") if pd.notnull(row) else row)
 
+        # set index to publishing time, inplace to apply to same df instead of copy or view
         self.all_news_df.set_index('publishedAt', inplace=True)
 
+        # apply .get_article_text() to text column of df
         self.all_news_df["text"] = self.all_news_df["url"].apply(
             self.get_article_text)
+
+
+        # get keywords from article text
+        self.all_news_df["keywords"] = self.all_news_df['text'].apply(
+            self.keyword_extraction)
+        # get top n=3 words of significance
+        self.all_news_df["keywords"] = self.all_news_df["keywords"].apply(
+            self.get_top_n, n=3)
 
         return self.all_news_df
 
     def get_article_text(self, url):
-        """Get and clean news article text"""
+        """Clean & process news article text to prepare for keyword extraction"""
 
         contractions_dict = {"'s": " is", "n't": " not", "'m": " am", "'ll": " will",
                              "'d": " would", "'ve": " have", "'re": " are"}
-        symbols_list = ['&', '+', '-', '/', '|', '$', '%', ':']
+        symbols_list = ['&', '+', '-', '/', '|', '$', '%', ':', '(', ')', '?']
 
         # request
         r = requests.get(url)
@@ -167,6 +177,9 @@ class News():
 
         # remove newline characters
         a_text = a_text.strip()
+        # split joined words
+        a_text = " ".join([s for s in re.split(
+            "([A-Z][a-z]+[^A-Z]*)", a_text) if s])
         # remove mentions
         a_text = re.sub("@\S+", " ", a_text)
         # remove URLs
@@ -179,7 +192,7 @@ class News():
         for key, value in contractions_dict.items():
             if key in a_text:
                 a_text = a_text.replace(key, value)
-
+        # remove symbols and punctuation
         for i in symbols_list:
             if i in a_text:
                 a_text = a_text.replace(i, '')
@@ -210,7 +223,7 @@ class News():
         tf_score = {}
         for each_word in total_words:
             each_word = each_word.replace('.', '')
-            if each_word not in stop_words:
+            if each_word not in stop_words and len(each_word) > 3:
                 if each_word in tf_score:
                     tf_score[each_word] += 1
                 else:
@@ -224,7 +237,7 @@ class News():
         idf_score = {}
         for each_word in total_words:
             each_word = each_word.replace('.', '')
-            if each_word not in stop_words:
+            if each_word not in stop_words and len(each_word) > 3:
                 if each_word in idf_score:
                     idf_score[each_word] = self.check_sent(
                         each_word, total_sentences)
@@ -250,7 +263,8 @@ class News():
 
     def get_top_n(self, dict_elem, n):
         """Calculate most important keywords in text of interest"""
-        result = dict(sorted(dict_elem.keys(),
-                             key=itemgetter(2), reverse=True)[:n])
+        result = dict(sorted(dict_elem.items(),
+                             key=itemgetter(1), reverse=True)[:n])
+        result = result.keys()
 
         return result

@@ -1,4 +1,4 @@
-import get_news
+from news import *
 
 import tweepy  # python package for accessing Tweet streaming API
 from tweepy import API
@@ -11,14 +11,20 @@ import requests
 from datetime import date, timedelta
 import urllib.parse
 
-twitter_config = configparser.ConfigParser()
-twitter_config.read('config.ini')
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-access_token = twitter_config['twitterAuth']['access_token']
-access_token_secret = twitter_config['twitterAuth']['access_token_secret']
-consumer_key = twitter_config['twitterAuth']['consumer_key']
-consumer_secret = twitter_config['twitterAuth']['consumer_secret']
+access_token = config['twitterAuth']['access_token']
+access_token_secret = config['twitterAuth']['access_token_secret']
+consumer_key = config['twitterAuth']['consumer_key']
+consumer_secret = config['twitterAuth']['consumer_secret']
 
+news_api_key = config['newsAuth']['api_key']
+
+# instantiate News class
+news = News(news_api_key)
+# get all news - takes about 30 seconds
+news.get_all_news()
 
 class Tweets():
     
@@ -37,7 +43,7 @@ class Tweets():
         self.auth.set_access_token(self.access_token, self.access_token_secret)
 
         # create API object
-        self.api = API(self.auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+        self.api = API(self.auth, wait_on_rate_limit=True) #wait_on_rate_limit_notify=True)
 
         try:
             self.api.verify_credentials()
@@ -47,33 +53,23 @@ class Tweets():
         
         self.logger.info("Tweepy API Authenticated")
     
-    def tweet_search(self, query):
+    def tweet_search(self, keyword_dict):
         """Search for tweets within previous 7 days.
             Inputs: 
-                https-encoded query
-                language
-                'until' date
-                geocode (latitude/longitude)
+                keyword list
             Returns: 
-                Tweet object
+                Tweet list
         """
-        self.tweet_search_list = []
-        query = urllib.parse.urlencode(query)
-        # latitude & longitude of Colombus, OH, USA
-        latitude = '39.9828671'
-        longitude = '-83.1309131'
-        # radius of united states
-        radius = '3881mi'
+        self.tweet_search_dict = {}
+        # collect tweets, filter out retweets
+        for word in keyword_dict.keys():
+            tweets = tweepy.Cursor(self.api.search_tweets, q=str(word) + " -filter:retweets", lang='en').items()
+            self.tweet_search_dict = {
+                [tweet.id, tweet.user.id, tweet.user.location, tweet.created_at, tweet.text] for tweet in tweets}
 
-        query_result = tweepy.Cursor(self.api, q=query, lang='en', until={
-                                     date.today()}, geocode=[latitude, longitude, radius])
-
-        for status in tweepy.Cursor(query_result).items():
-            self.tweet_search_list.append(status)
-            return self.tweet_search_list
-
-        # TODO append tweets to dataframe & return it
-        self.tweet_search_df = pd.DataFrame(self.tweet_search_list)
+        self.tweet_search_df = pd.DataFrame.from_dict(self.tweet_search_dict, columns=[
+                                            "tweet_id", "user_id", "location", "createdAt", "tweet_text"])
+        self.tweet_search_df.set_index("tweet_id")
         return self.tweet_search_df
         
     def tweet_trends(self):
@@ -138,4 +134,11 @@ class TwitterStreamListener(tweepy.StreamListener):
             return False
 
 
+keywords = dict(news.all_news_df["keywords"])
 
+#print(keywords)
+t = Tweets(consumer_key, consumer_secret, access_token, access_token_secret)
+auth = t.tweepy_auth()
+# search_df = t.tweet_search(keywords)
+
+print(t.tweet_search_df)
