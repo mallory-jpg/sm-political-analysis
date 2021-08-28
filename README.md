@@ -66,4 +66,7 @@ With data from social media adding a pop-cultural context to political news, we 
 
 Check out this project's slide deck ⤵
 
-<figure class="video_container"><iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSsP1VttwV73M6ntQdD9uTq4L3XKvfBuHuB8uRGJ2zP0xMoKXAS_WsshHI869rf6AYDT18fpNWGfN8Z/embed?start=false&loop=false&delayms=10000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">        </iframe></figure>
+
+<figure class="video_container"><iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSsP1VttwV73M6ntQdD9uTq4L3XKvfBuHuB8uRGJ2zP0xMoKXAS_WsshHI869rf6AYDT18fpNWGfN8Z/embed?start=false&loop=false&delayms=10000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+</figure>
+
