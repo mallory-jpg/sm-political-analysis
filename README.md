@@ -1,6 +1,6 @@
 # Social Media Political Analysis 🇺🇸
 ### Springboard Open-ended Capstone
-
+![SM Political Analysis - 4](https://user-images.githubusercontent.com/65197541/131225592-9e8dd0a0-1750-408f-93d8-72ca04e88e1a.png)
 ## Objectives
 ### Problems & Questions
 _How can we better develop educational materials to meet kids where they are?_
@@ -65,9 +65,7 @@ At this point, I've found that my GET requests for popular news articles return 
 With data from social media adding a pop-cultural context to political news, we inch closer to an understanding of TikTok and Twitter as novel forms of youth political engagement!
 
 Check out this project's slide deck ⤵
-![SM Political Analysis - 4](https://user-images.githubusercontent.com/65197541/131225592-9e8dd0a0-1750-408f-93d8-72ca04e88e1a.png)
 ![SM Political Analysis - 4 (2)](https://user-images.githubusercontent.com/65197541/131225593-367e0894-08d3-4fea-ab17-36f274e03c64.png)
-![SM Political Analysis - 4 (3)](https://user-images.githubusercontent.com/65197541/131225596-0732e1a6-f25a-4fae-a383-40ff2e134fe4.png)
 ![SM Political Analysis - 4 (4)](https://user-images.githubusercontent.com/65197541/131225599-038ec36c-d644-4f60-a8f2-0bd43ade94df.png)
 ![SM Political Analysis - 4 (7)](https://user-images.githubusercontent.com/65197541/131225638-ba49f6d7-a3e1-46bc-8b54-a71b319b8990.png)
 ![SM Political Analysis - 4 (8)](https://user-images.githubusercontent.com/65197541/131225639-88301e11-ed3c-4ab0-8b11-2cbd95d0677c.png)
