@@ -41,6 +41,7 @@ _How can we better develop educational materials to meet kids where they are?_
     consumer_key = <consumer_key>
     consumer_secret = <consumer_secret>
   ```
+  *Note*: headers and keys/variables in config.ini file don't need to be stored as strings, but when calling them in program, enclose references with quotes
 
 ### To scrape the web without getting blocked:
 Clone the following url into your project directory using Git or checkout with SVN: `https://github.com/tamimibrahim17/List-of-user-agents.git`. These .txt files contain User Agents and are specified by browser (shout out [Timam Ibrahim][https://github.com/tamimibrahim17]!). They will be randomized to avoid detection by web browsers.
@@ -65,4 +66,4 @@ With data from social media adding a pop-cultural context to political news, we 
 
 Check out this project's slide deck ⤵
 
-⚠️⚠️⚠️ Coming Soon ⚠️⚠️⚠️
+<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSsP1VttwV73M6ntQdD9uTq4L3XKvfBuHuB8uRGJ2zP0xMoKXAS_WsshHI869rf6AYDT18fpNWGfN8Z/embed?start=false&loop=false&delayms=10000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
