@@ -53,24 +53,136 @@ class Tweets():
         
         self.logger.info("Tweepy API Authenticated")
     
-    def tweet_search(self, keyword_dict):
+    def tweet_search(self, news_keywords):
         """Search for tweets within previous 7 days.
             Inputs: 
                 keyword list
             Returns: 
                 Tweet list
         """
-        self.tweet_search_dict = {}
-        # collect tweets, filter out retweets
-        for word in keyword_dict.keys():
-            tweets = tweepy.Cursor(self.api.search_tweets, q=str(word) + " -filter:retweets", lang='en').items()
-            self.tweet_search_dict = {
-                [tweet.id, tweet.user.id, tweet.user.location, tweet.created_at, tweet.text] for tweet in tweets}
 
-        self.tweet_search_df = pd.DataFrame.from_dict(self.tweet_search_dict, columns=[
-                                            "tweet_id", "user_id", "location", "createdAt", "tweet_text"])
-        self.tweet_search_df.set_index("tweet_id")
-        return self.tweet_search_df
+
+        api = self.api
+        tweet_list = []
+
+        for keys in news_keywords:
+            keywords = list(keys)  # TODO add itertools combinations
+
+            # collect tweets, filter out retweets
+            for word in keywords:
+                tweets = api.search_tweets(q=str(
+                    word) + " -filter:retweets", lang='en')
+    
+
+        #     self.tweet_search_dict = {
+        #         [tweet.id, tweet.user.id, tweet.user.location, tweet.created_at, tweet.text] for tweet in tweets}
+
+        # self.tweet_search_df = pd.DataFrame.from_dict(self.tweet_search_dict, columns=[
+        #                                     "tweet_id", "user_id", "location", "createdAt", "tweet_text"])
+        # self.tweet_search_df.set_index("tweet_id")
+        # return self.tweet_search_df
+
+            # for status in tweets:
+
+                
+                    # print(type(tweets))
+                # for tweet in tweets:
+                #     print(tweet)
+
+                #tweets = tweets['Status']['_json']
+
+                # with open("tweets.json", "w") as f:
+                #     # write tweets to json file
+                #     json.dump(tweets, f)
+
+                # with open("tweets.json", "r") as file:
+                #     # create python object from json
+                #     tweets_json = file.read().split("\n")
+
+                #     for tweet in tweets_json:
+                #         tweet_obj = json.loads(tweet)
+
+                #         #flatten nested fields
+                #         if 'quoted_status' in tweet_obj:
+                #             tweet_obj['quote_tweet'] = tweet_obj['quoted_status']['extended_tweet']['full_text']
+                #         if 'user' in tweet_obj:
+                #             tweet_obj['location'] = tweet_obj['user']['location']
+                #         if 'created_at' in tweet_obj:
+                #             tweet_obj['createdAt'] = tweet_obj['created_at']
+                #         if 'truncated' == True:
+                #             pass
+                #         if 'entities' in tweet_obj:
+                #             tweet_obj['hashtags'] = tweet_obj['entities']['hashtags']
+
+                #         tweet_list.append(tweet_obj)
+                #         print(tweet_list)
+
+                #     return tweet_list
+
+                # for tweet in tweets:
+                #     print(tweet)
+                
+                # tweet_search_dict = {[tweet.id, tweet.user.id, tweet.user.location, tweet.created_at, tweet.text] for tweet in tweets}
+                # print(tweet_search_dict)
+        
+        # self.tweet_search_df = pd.DataFrame.from_dict(tweet_search_dict, columns=["tweet_id", "user_id", "location", "createdAt", "tweet_text"])
+
+                #return tweets
+        # self.tweet_search_df.set_index("tweet_id")
+        
+        #return self.tweet_search_df
+        #return tweet_search_dict
+        
+            # for status in tweets:
+
+                # print(type(tweets))
+                # for tweet in tweets:
+                #     print(tweet)
+
+                #tweets = tweets['Status']['_json']
+
+                # with open("tweets.json", "w") as f:
+                #     # write tweets to json file
+                #     json.dump(tweets, f)
+
+                # with open("tweets.json", "r") as file:
+                #     # create python object from json
+                #     tweets_json = file.read().split("\n")
+
+                #     for tweet in tweets_json:
+                #         tweet_obj = json.loads(tweet)
+
+                #         #flatten nested fields
+                #         if 'quoted_status' in tweet_obj:
+                #             tweet_obj['quote_tweet'] = tweet_obj['quoted_status']['extended_tweet']['full_text']
+                #         if 'user' in tweet_obj:
+                #             tweet_obj['location'] = tweet_obj['user']['location']
+                #         if 'created_at' in tweet_obj:
+                #             tweet_obj['createdAt'] = tweet_obj['created_at']
+                #         if 'truncated' == True:
+                #             pass
+                #         if 'entities' in tweet_obj:
+                #             tweet_obj['hashtags'] = tweet_obj['entities']['hashtags']
+
+                #         tweet_list.append(tweet_obj)
+                #         print(tweet_list)
+
+                #     return tweet_list
+
+                # for tweet in tweets:
+                #     print(tweet)
+
+                # tweet_search_dict = {[tweet.id, tweet.user.id, tweet.user.location, tweet.created_at, tweet.text] for tweet in tweets}
+                # print(tweet_search_dict)
+
+        # self.tweet_search_df = pd.DataFrame.from_dict(tweet_search_dict, columns=["tweet_id", "user_id", "location", "createdAt", "tweet_text"])
+
+                #return tweets
+        # self.tweet_search_df.set_index("tweet_id")
+
+        #return self.tweet_search_df
+        #return tweet_search_dict
+
         
     def tweet_trends(self):
             # returns JSON
