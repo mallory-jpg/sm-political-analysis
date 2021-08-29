@@ -29,53 +29,104 @@ news.get_all_news()
 class Tweets():
     
     def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, logger=logging):
-        #self.logger = logging.basicConfig(filename='tweets.log', filemode='w',
-                                         #format=f'%(asctime)s - %(levelname)s - %(message)s')
+        self.logger = logging.basicConfig(filename='tweets.log', filemode='w',
+                                          format=f'%(asctime)s - %(levelname)s - %(message)s')
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
         self.access_token = access_token
         self.access_token_secret = access_token_secret
-        self.logger = logging.getLogger(__name__)
 
     def tweepy_auth(self):
+        """Authorize tweepy API"""
 
         self.auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token, self.access_token_secret)
 
         # create API object
-        self.api = API(self.auth, wait_on_rate_limit=True) #wait_on_rate_limit_notify=True)
+        self.api = API(self.auth, wait_on_rate_limit=True, user_agent=get_random_ua('Chrome'))# wait_on_rate_limit_notify=True)
 
         try:
             self.api.verify_credentials()
+            logging.info("Tweepy API Authenticated")
+            print('Authentication successful')
         except Exception as e:
-            self.logger.error("Error during Tweepy authentication")
+            logging.error(f"Error during Tweepy authentication: {e}")
+            print('Authentication error. Did you set your access tokens?')
             raise e
-        
-        self.logger.info("Tweepy API Authenticated")
+        return self.api
+    
+    def get_tweets(self, news_keywords, news_instance): # TODO add stream listening stuff to params
+        searched_tweets = self.tweet_search(news_keywords)
+        stream_tweets = TwitterStreamListener.on_status(listener, tweet_stream)
+
+        # all_tweets = {}
+        # # process tweets
+        # for tweet in searched_tweets:
+        #     # count tweets
+        #     pass
+        #     # add count to df column?
+            
+        # for tweet in stream_tweets:
+        #     pass
+        # # break tweets apart for table
+        # for tweet in searched_tweets, stream_tweets:
+        #     all_tweets["tweet_id"] = tweet['id']
+
+        #     # add all tweets to database! via mogrify
+
+        #     # put tweets in df
+        #     self.all_tweets_df = pd.DataFrame.from_dict(all_tweets, columns=[
+        #                                               "tweet_id", "user_id", "location", "createdAt", "tweet_text"])
+
+        #     self.all_tweets_df.set_index("tweet_id")
+
+        #     # tweets mention count to news df column
+        #     news_instance.all_news_df["tweet_mention_count"] = self.all_tweets_df["tweet_id"].apply(
+        #         np.count_nonzero)
+
+            # clear dataframe?
     
     def tweet_search(self, news_keywords):
         """Search for tweets within previous 7 days.
             Inputs: 
                 keyword list
             Returns: 
-                Tweet list
+                Tweet list => JSON
         """
-
-
         api = self.api
-        tweet_list = []
-
+        # tweet_list = []
+        # unpack keyword tuples
         for keys in news_keywords:
-            keywords = list(keys)  # TODO add itertools combinations
-
-            # collect tweets, filter out retweets
+            keywords = list(keys) # TODO add itertools combinations
             for word in keywords:
-                tweets = api.search_tweets(q=str(
-                    word) + " -filter:retweets", lang='en')
-    
+                    # tweets = tweepy.Cursor(self.api.search_tweets, q=str(word) + " -filter:retweets", lang='en').items()
+                    # collect tweets, filter out retweets
+                    try: 
+                        print('Searching for tweets matching keywords')
+                        result = api.search_tweets(q=str(
+                                word) + " -filter:retweets", lang='en')
+                        status = result[0]
+                        tweets = status._json
+                    except (TypeError) as e:
+                        logging('Error: ', e)
+                        print('Error: keyword not found in tweet search')
+                        continue
+                    # else:
+                    #     print('Loading tweets to JSON')
+                    #     tweets = json.loads(status._json)
+                        
+                    else:
+                        # write tweets to json file
+                        with open("tweets.json", "w") as f:
+                            print('Loading tweets to JSON file')
+                            json.dump(tweets, f)
+                        # self.logging.info('Success')
+                        print('Success')
 
-        #     self.tweet_search_dict = {
-        #         [tweet.id, tweet.user.id, tweet.user.location, tweet.created_at, tweet.text] for tweet in tweets}
+                    finally:
+                        pass # TODO add tweet unpacking & cleaning
+
+                    #return result
 
         # self.tweet_search_df = pd.DataFrame.from_dict(self.tweet_search_dict, columns=[
         #                                     "tweet_id", "user_id", "location", "createdAt", "tweet_text"])
@@ -253,4 +304,4 @@ t = Tweets(consumer_key, consumer_secret, access_token, access_token_secret)
 auth = t.tweepy_auth()
 # search_df = t.tweet_search(keywords)
 
-print(t.tweet_search_df)
+
