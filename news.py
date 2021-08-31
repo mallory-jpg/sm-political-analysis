@@ -25,7 +25,8 @@ from helper_functions import get_random_ua
 c = configparser.ConfigParser()
 c.read('config.ini')
 
-news_api_key = c['newsAuth']['api_key']
+# news_api_key = c['newsAuth']['api_key']
+news_api_key = '5ad329e32761446fa17cedddace957c4'
 
 class News():
     """Extract keywords from  news articles to use as search values for TikTok & Twitter posts relating to the political event of interest. """
@@ -172,7 +173,7 @@ class News():
         # request
         r = requests.get(url)
         html = r.text
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, features="lxml")
         a_text = soup.get_text()
 
         # remove newline characters
