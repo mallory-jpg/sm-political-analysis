@@ -76,11 +76,14 @@ class TikTokAPI(TikTokAPI):
                     extra_headers = {
                             "Referer": "https://www.tiktok.com/tag/" + str(hashTag)}
                     self.tiktok_count += 1
-                    toks = self.send_get_request(url, params, extra_headers=extra_headers)
-                    self.tiktok_df = pd.DataFrame(toks, columns=[
+                    tok = self.send_get_request(url, params, extra_headers=extra_headers)
+                    # write tiktoks to json file
+                    with open("tiktoks.json", "a") as f:
+                        json.dump(tok, f)
+                    self.tiktok_df = pd.DataFrame('tiktoks.json', columns=[
                         'postID', 'createTime', 'userID', 'description', 'musicId', 'soundId', 'tags'])
                     print(self.tiktok_count)
-                    return toks
+                    return tok
         except KeyboardInterrupt as ex:
             raise ex
         finally:
