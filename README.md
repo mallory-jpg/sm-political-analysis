@@ -17,7 +17,7 @@ _How can we better develop educational materials to meet kids where they are?_
 2. [x] Parse news story title & article into individual words/phrases
 3. [x] Count most important individual words & phrases
 4. [x]  Use top 3 most important words & phrases to search TikTok & Twitter
-5. []  Count number of tweets & TikToks mentioning key words & phrases
+5. [x]  Count number of tweets & TikToks mentioning key words & phrases
 
 ## Installation & Use
 `config.ini` should have the following layout and info:
