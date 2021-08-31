@@ -10,6 +10,8 @@ import configparser
 import requests
 from datetime import date, timedelta
 import urllib.parse
+import geocoder
+import sys
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -26,6 +28,10 @@ news = News(news_api_key)
 # get all news - takes about 30 seconds
 news.get_all_news()
 
+def tweet_cleaner():
+    """Clean tweets from stream and search"""
+    pass
+
 class Tweets():
     
     def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, logger=logging):
@@ -35,6 +41,10 @@ class Tweets():
         self.consumer_secret = consumer_secret
         self.access_token = access_token
         self.access_token_secret = access_token_secret
+
+        self.location = sys.argv[1]  # user location as argument variable
+        # object with latitude & longitude of user location
+        self.geo = geocoder.osm(self.location)
 
     def tweepy_auth(self):
         """Authorize tweepy API"""
@@ -48,10 +58,9 @@ class Tweets():
         try:
             self.api.verify_credentials()
             logging.info("Tweepy API Authenticated")
-            print('Authentication successful')
+            print('Tweepy Authentication successful')
         except Exception as e:
             logging.error(f"Error during Tweepy authentication: {e}")
-            print('Authentication error. Did you set your access tokens?')
             raise e
         return self.api
     
@@ -88,178 +97,64 @@ class Tweets():
     
     def tweet_search(self, news_keywords):
         """Search for tweets within previous 7 days.
-            Inputs: 
+            Inputs:
                 keyword list
-            Returns: 
+            Returns:
                 Tweet list => JSON
         """
         api = self.api
-        # tweet_list = []
+
         # unpack keyword tuples
+        print('Searching for tweets matching keywords')
         for keys in news_keywords:
-            keywords = list(keys) # TODO add itertools combinations
+            keywords = list(keys)  # TODO add itertools combinations
             for word in keywords:
-                    # tweets = tweepy.Cursor(self.api.search_tweets, q=str(word) + " -filter:retweets", lang='en').items()
-                    # collect tweets, filter out retweets
-                    try: 
-                        print('Searching for tweets matching keywords')
+                    try:
                         result = api.search_tweets(q=str(
-                                word) + " -filter:retweets", lang='en')
+                            word) + " -filter:retweets", lang='en')
+                        # print(type(result))
                         status = result[0]
-                        tweets = status._json
+                        # print(type(status))
+                        tweet = status._json
+                        search_tweet_count = len(tweet)
+                        #self.file.write(json.dumps(tweets)+ '\\n')
+                        tweet = json.dumps(tweet)  # tweet to json string
+                        assert (type(tweet) ==
+                                str), "Tweet must be converted to JSON string"
+                        tweet = json.loads(tweet)  # tweet to dict
+                        assert (
+                            type(tweet) == dict), "Tweet must be converted from JSON string to type dict"
                     except (TypeError) as e:
                         logging('Error: ', e)
                         print('Error: keyword not found in tweet search')
-                        continue
-                    # else:
-                    #     print('Loading tweets to JSON')
-                    #     tweets = json.loads(status._json)
-                        
+                        break
                     else:
                         # write tweets to json file
-                        with open("tweets.json", "w") as f:
-                            print('Loading tweets to JSON file')
-                            json.dump(tweets, f)
-                        # self.logging.info('Success')
-                        print('Success')
+                        with open("tweets.json", "a") as f:
+                            json.dump(tweet, f)
+        logging.info('Tweet search successful')
+        print('Tweet search by keyword was successful')
 
-                    finally:
-                        pass # TODO add tweet unpacking & cleaning
+        #finally:
+          # TODO add tweet unpacking & cleaning?
+          #pass
+          # TODO put tweets into db
+           # TODO
 
-                    #return result
+                  #return result
 
-        # self.tweet_search_df = pd.DataFrame.from_dict(self.tweet_search_dict, columns=[
-        #                                     "tweet_id", "user_id", "location", "createdAt", "tweet_text"])
-        # self.tweet_search_df.set_index("tweet_id")
-        # return self.tweet_search_df
-
-            # for status in tweets:
-
-                
-                    # print(type(tweets))
-                # for tweet in tweets:
-                #     print(tweet)
-
-                #tweets = tweets['Status']['_json']
-
-                # with open("tweets.json", "w") as f:
-                #     # write tweets to json file
-                #     json.dump(tweets, f)
-
-                # with open("tweets.json", "r") as file:
-                #     # create python object from json
-                #     tweets_json = file.read().split("\n")
-
-                #     for tweet in tweets_json:
-                #         tweet_obj = json.loads(tweet)
-
-                #         #flatten nested fields
-                #         if 'quoted_status' in tweet_obj:
-                #             tweet_obj['quote_tweet'] = tweet_obj['quoted_status']['extended_tweet']['full_text']
-                #         if 'user' in tweet_obj:
-                #             tweet_obj['location'] = tweet_obj['user']['location']
-                #         if 'created_at' in tweet_obj:
-                #             tweet_obj['createdAt'] = tweet_obj['created_at']
-                #         if 'truncated' == True:
-                #             pass
-                #         if 'entities' in tweet_obj:
-                #             tweet_obj['hashtags'] = tweet_obj['entities']['hashtags']
-
-                #         tweet_list.append(tweet_obj)
-                #         print(tweet_list)
-
-                #     return tweet_list
-
-                # for tweet in tweets:
-                #     print(tweet)
-                
-                # tweet_search_dict = {[tweet.id, tweet.user.id, tweet.user.location, tweet.created_at, tweet.text] for tweet in tweets}
-                # print(tweet_search_dict)
-        
-        # self.tweet_search_df = pd.DataFrame.from_dict(tweet_search_dict, columns=["tweet_id", "user_id", "location", "createdAt", "tweet_text"])
-
-                #return tweets
-        # self.tweet_search_df.set_index("tweet_id")
-        
-        #return self.tweet_search_df
-        #return tweet_search_dict
-        
-            # for status in tweets:
-
-                # print(type(tweets))
-                # for tweet in tweets:
-                #     print(tweet)
-
-                #tweets = tweets['Status']['_json']
-
-                # with open("tweets.json", "w") as f:
-                #     # write tweets to json file
-                #     json.dump(tweets, f)
-
-                # with open("tweets.json", "r") as file:
-                #     # create python object from json
-                #     tweets_json = file.read().split("\n")
-
-                #     for tweet in tweets_json:
-                #         tweet_obj = json.loads(tweet)
-
-                #         #flatten nested fields
-                #         if 'quoted_status' in tweet_obj:
-                #             tweet_obj['quote_tweet'] = tweet_obj['quoted_status']['extended_tweet']['full_text']
-                #         if 'user' in tweet_obj:
-                #             tweet_obj['location'] = tweet_obj['user']['location']
-                #         if 'created_at' in tweet_obj:
-                #             tweet_obj['createdAt'] = tweet_obj['created_at']
-                #         if 'truncated' == True:
-                #             pass
-                #         if 'entities' in tweet_obj:
-                #             tweet_obj['hashtags'] = tweet_obj['entities']['hashtags']
-
-                #         tweet_list.append(tweet_obj)
-                #         print(tweet_list)
-
-                #     return tweet_list
-
-                # for tweet in tweets:
-                #     print(tweet)
-
-                # tweet_search_dict = {[tweet.id, tweet.user.id, tweet.user.location, tweet.created_at, tweet.text] for tweet in tweets}
-                # print(tweet_search_dict)
-
-        # self.tweet_search_df = pd.DataFrame.from_dict(tweet_search_dict, columns=["tweet_id", "user_id", "location", "createdAt", "tweet_text"])
-
-                #return tweets
-        # self.tweet_search_df.set_index("tweet_id")
-
-        #return self.tweet_search_df
-        #return tweet_search_dict
-
-        
-    def tweet_trends(self):
-            # returns JSON
-        # 1 refers to USA WOEID 
-        self.tweet_trends_list = []
-        result = tweepy.Cursor(self.api.trends_place(1))
-
-        for trend in tweepy.Cursor(result).items():
-            self.tweet_trends_list.append(trend)
-            return self.tweet_trends_list
-        
-        #TODO append to dataframe
-        self.tweet_trends_df = pd.DataFrame(self.tweet_trends_list)
-        return self.tweet_trends_df    
 
 # define stream listener class
-class TwitterStreamListener(tweepy.StreamListener):
+class TwitterStreamListener(tweepy.Stream):
     def __init__(self, api=None):
-        super(TwitterStreamListener, self).__init__()
+        super(tweepy.Stream, self).__init__()
         self.num_tweets = 0
         # self.file = open('tweets.txt', 'w')
         # self.db = ''
         self.tweet_list = []
         # self.file = open("tweets.json", "w")
 
-    def on_status(self, status):
+    def on_status(self, status): # TODO just want to collect tweets from the stream then call the cleaner on them outside of the class instance
         tweet = status._json
 
         with open("tweets.json", "w") as f:
