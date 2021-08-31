@@ -119,10 +119,12 @@ alter_tiktok_stats_table = """
 
 
 class DataBase():
-    def __init__(self, host_name, user_name, user_password):
+    def __init__(self, host_name, user_name, user_password, logger=logging):
         self.host_name = host_name
         self.user_name = user_name
         self.user_password = user_password
+        self.logger = logging.basicConfig(filename='db.log', filemode='w',
+                                          format=f'%(asctime)s - %(levelname)s - %(message)s')
 
     def create_server_connection(self):
         self.connection = None
