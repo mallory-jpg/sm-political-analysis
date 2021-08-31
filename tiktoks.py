@@ -10,12 +10,11 @@ from news import *
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-fp = config['tiktokAuth']['s_v_web_id']
+# fp = config['tiktokAuth']['s_v_web_id']
 news_api_key = config['newsAuth']['api_key']
 
 # instantiate class
 news = News(news_api_key)
-
 news.get_all_news()
 
 class TikToks(TikTokApi):
@@ -25,7 +24,7 @@ class TikToks(TikTokApi):
         self.custom_verifyFp = True
 
     # @Timer("Tiktok Download")
-    def get_tiktok_trends(self, keywords):
+    def get_trending_tiktoks(self, keywords):
         # returns tiktok dictionary/JSON
         self.api = TikTokApi()
         trends = self.api.by_hashtag(keywords)
@@ -76,6 +75,14 @@ class TikToks(TikTokApi):
         return self.toks_df
 
 
-tiktoks = TikToks()
-tiktoks.get_instance(custom_verifyFp=fp, use_test_endpoints=True)
-# tiktoks.get_tiktok_trends('politics')
+fp = c['tiktokAuth']['s_v_web_id']
+# keywords = list(news.all_news_df["keywords"])
+tiktoks_df = pd.DataFrame(columns=[
+    'postID', 'createTime', 'userId', 'description', 'musicID', 'soundID', 'tags'])
+
+api = TikTokApi.get_instance()
+
+news.all_news_df['encoded_keys'] = map(lambda x: x.encode(
+    'base64', 'strict'), news.all_news_df['keywords'])
+
+tiktoks_df["tiktoks"] = news.all_news_df['encoded_keys'].apply(api.by_hashtag)
