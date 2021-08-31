@@ -25,8 +25,7 @@ from helper_functions import get_random_ua
 c = configparser.ConfigParser()
 c.read('config.ini')
 
-# news_api_key = c['newsAuth']['api_key']
-news_api_key = '5ad329e32761446fa17cedddace957c4'
+news_api_key = c['newsAuth']['api_key']
 
 class News():
     """Extract keywords from  news articles to use as search values for TikTok & Twitter posts relating to the political event of interest. """
@@ -54,9 +53,15 @@ class News():
 
         url = 'https://newsapi.org/v2/everything'
 
-        # response as JSON dict
-        self.response = requests.get(
-            url, params=self.params, headers=headers).json()
+        try:
+            # response as JSON dict
+            self.response = requests.get(
+                url, params=self.params, headers=headers).json()
+        except requests.ConnectionError as err:
+            logging.error(err)
+            raise err
+        else:
+            logging.info('Popular news request successful')
 
         with open('pop_news.json', 'w') as f:
             # write results to JSON file
@@ -96,9 +101,14 @@ class News():
             "user-agent": get_random_ua('Chrome')
         }
         url = "https://newsapi.org/v2/top-headlines"
-
-        self.response = requests.get(
-            url, params=self.params, headers=headers).json()  # response JSON dict
+        try:
+            self.response = requests.get(
+                url, params=self.params, headers=headers).json()  # response JSON dict
+        except requests.ConnectionError as err:
+            logging.error(err)
+            raise err
+        else:
+            logging.info('Top headlines request successful')
 
         with open("top_headlines.json", "w") as f:
             # write results to JSON file
@@ -128,32 +138,36 @@ class News():
     # put all news together
     def get_all_news(self):
         """Combines top headlines and popular news into one Pandas DataFrame."""
-        top_headlines = self.get_top_headlines()
-        pop_news = self.request_pop_news()
+        try:
+            top_headlines = self.get_top_headlines()
+            pop_news = self.request_pop_news()
+        except requests.Timeout as err:
+            logging.error(err, '')
+            raise err
+        except KeyboardInterrupt as i:
+            logging.critical(i, 'News request interrupted - taking too long')
+        else:
+            logging.info('News request successful')
+            # noramlize nested JSON
+            pop_news = pd.json_normalize(pop_news, record_path=['articles'])
+            top_headlines = pd.json_normalize(
+                top_headlines, record_path=['articles'])
+            all_news = top_headlines.append(pop_news)
 
-        # noramlize nested JSON
-        pop_news = pd.json_normalize(pop_news, record_path=['articles'])
-        top_headlines = pd.json_normalize(
-            top_headlines, record_path=['articles'])
-        all_news = top_headlines.append(pop_news)
-
-        # create dataframe from combined news list
-        self.all_news_df = pd.DataFrame(
-            all_news, columns=['title', 'author', 'url', 'publishedAt', "text"])
-        self.all_news_df.drop_duplicates()
+            # create dataframe from combined news list
+            self.all_news_df = pd.DataFrame(
+                all_news, columns=['title', 'author', 'url', 'publishedAt', "text"])
+            self.all_news_df.drop_duplicates()
 
         # convert to datetime
         self.all_news_df['publishedAt'] = self.all_news_df['publishedAt'].map(
             lambda row: datetime.strptime(str(row), "%Y-%m-%dT%H:%M:%SZ") if pd.notnull(row) else row)
-
         # set index to publishing time, inplace to apply to same df instead of copy or view
         self.all_news_df.set_index('publishedAt', inplace=True)
 
         # apply .get_article_text() to text column of df
         self.all_news_df["text"] = self.all_news_df["url"].apply(
             self.get_article_text)
-
-
         # get keywords from article text
         self.all_news_df["keywords"] = self.all_news_df['text'].apply(
             self.keyword_extraction)

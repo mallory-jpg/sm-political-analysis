@@ -31,6 +31,8 @@ from tiktok import *
 from tweets import *
 from news import *
 
+
+
 c = configparser.ConfigParser()
 c.read('config.ini')
 
@@ -41,7 +43,6 @@ password = c['database']['password']
 db = c['database']['database']
 
 news_api_key = c['newsAuth']['api_key']
-
 tiktok_sv_id = c['tiktokAuth']['s_v_web_id']
 tiktok_tt_id = c['tiktokAuth']['tt_webid']
 

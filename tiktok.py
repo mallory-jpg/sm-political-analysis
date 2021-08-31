@@ -1,6 +1,5 @@
 from TikTokAPI import TikTokAPI
 import configparser
-from configparser import ConfigParser
 import nest_asyncio
 import pandas as pd
 from news import *
@@ -17,7 +16,7 @@ from database import *
 #     }
 
 c = configparser.ConfigParser()
-c.read('config.ini')
+c.read('sm-political-analysis/config.ini')
 
 host = c['database']['host']
 username = c['database']['user']
@@ -39,11 +38,12 @@ class TikTokAPI(TikTokAPI):
     # DATABASE = DataBase(host, username, password)
     # CXN = DATABASE.create_db_connection(db)
 
-    def __init__(self, cookie, api=None):
+    def __init__(self, cookie, logger=logging, api=None):
         super(TikTokAPI, self).__init__()
         self.cookie = cookie
         self.tiktok_count = 0
-
+        self.logger = logging.basicConfig(filename='tiktok.log', filemode='w',
+                                          format=f'%(asctime)s - %(levelname)s - %(message)s')
     def getVideosByHashtag(self, hashtags, count=3000):
         try:
             for hashTag in hashtags:
@@ -80,13 +80,12 @@ class TikTokAPI(TikTokAPI):
                     # write tiktoks to json file
                     with open("tiktoks.json", "a") as f:
                         json.dump(tok, f)
-                    self.tiktok_df = pd.DataFrame('tiktoks.json', columns=[
-                        'postID', 'createTime', 'userID', 'description', 'musicId', 'soundId', 'tags'])
                     print(self.tiktok_count)
                     return tok
         except KeyboardInterrupt as ex:
             raise ex
         finally:
+            self.tiktok_df = pd.read_json('tiktoks.json') # columns=['postID', 'createTime', 'userID', 'description', 'musicId', 'soundId', 'tags'])
             logging.info(f'This run scraped {self.tiktok_count} TikToks')
             return self.tiktok_df
             # DATABASE.execute_mogrify(CXN, tiktok_df, )
