@@ -34,6 +34,7 @@ _How can we better develop educational materials to meet kids where they are?_
 
   [tiktokAuth]
     s_v_web_id = <s_v_web_id>
+    tt_web_id = <tt_web_id>
 
   [twitterAuth]
     access_token = <access_token>
@@ -46,12 +47,12 @@ _How can we better develop educational materials to meet kids where they are?_
 ### To scrape the web without getting blocked:
 Clone the following url into your project directory using Git or checkout with SVN: `https://github.com/tamimibrahim17/List-of-user-agents.git`. These .txt files contain User Agents and are specified by browser (shout out [Timam Ibrahim][https://github.com/tamimibrahim17]!). They will be randomized to avoid detection by web browsers.
 
-### To find your `s_v_web_id` for TikTokAPI access:
+### To find your `s_v_web_id` & `tt_web_id` for TikTokAPI access:
 1. Go to the TikTok website & login
 2. If using Google Chrome, open the developer console 
 3. Go to the 'Application' tab 
 4. Find & click 'Cookies' in the left-hand panel → 
-5. On the resulting screen, look for s_v_web_id under the 'name' column
+5. On the resulting screen, look for `s_v_web_id` and `tt_web_id` under the 'name' column
 
 Find more information about .ini configuration files in Python documentation: `https://docs.python.org/3/library/configparser.html`
 
@@ -59,10 +60,24 @@ Find more information about .ini configuration files in Python documentation: `h
 
 This step was guided by my anticipation that the data will be used for trend graphing, sentiment analysis, age inference, and correlation between user characteristics and extent of participation in responding to political events. With this in mind, I plan to optimize query speed via limiting storage by geographic location of both users and events to the US (though this categorization may be loose at times because of US involvement on the world stage). My PostgreSQL database will also be sharded by datetime, as the analytical window references 3 days before and 3 days after the political event of interest.
 
-At this point, I've found that my GET requests for popular news articles return various formats which must be converted, unpacked, or otherwise transformed. Because of this added step, I opted to keep the article text in a separate table within the database. The text in this table will serve as data sources from which to extract our top 3 keywords (per article) using Term Frequency-Inverse Document Frequency (TF-IDF) calculations. These keywords will be applied to our searches for related TikToks and tweets. For some resources on this, check out
+At this point, I've found that my GET requests for popular news articles return various formats which must be converted, unpacked, or otherwise transformed. ~Because of this added step, I opted to keep the article text in a separate table within the database.~ The article text in the news table will serve as data sources from which to extract our top 3 keywords (per article) using Term Frequency-Inverse Document Frequency (TF-IDF) calculations. These keywords will be applied to our searches for related TikToks and tweets. For some resources on this, check out
 [TF-IDF in the real world](https://towardsdatascience.com/tf-idf-for-document-ranking-from-scratch-in-python-on-real-world-dataset-796d339a4089) and [a step-by-step guide by Prachi Prakash](https://www.analyticsvidhya.com/blog/2020/11/words-that-matter-a-simple-guide-to-keyword-extraction-in-python/).
 
 With data from social media adding a pop-cultural context to political news, we inch closer to an understanding of TikTok and Twitter as novel forms of youth political engagement!
+
+## Getting Tweets
+
+This project uses Tweepy's tweet search method to search for tweets within the past seven (7) days using the keywords produced from the `.get_all_news()` method. A separate Tweepy Stream Listener subclass catches tweets (statuses) that contain our keywords of interest as they are tweeted. The max stream rate for Twitter's API (upon which Tweepy is based) is 450.
+
+### Common Tweet Streaming Issues:
+* Make sure any json file that is being used to store tweets is opened with the 'a' designator for 'append' or else each tweet will overwrite the last
+
+## Getting TikToks
+
+This project uses Avilash Kumar's [TikTokAPI](https://github.com/avilash/TikTokAPI-Python). Refer to their GitHub for further information.
+
+### Common TikTok Streaming Issues:
+* Problems finding the installed module in code editor --> uninstall then reinstall 'from source' (as specified on the PyTikTokAPI GitHub - linked above) directly into project directory
 
 Check out this project's slide deck ⤵
 ![SM Political Analysis - 4 (2)](https://user-images.githubusercontent.com/65197541/131225593-367e0894-08d3-4fea-ab17-36f274e03c64.png)
