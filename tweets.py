@@ -10,6 +10,7 @@ import configparser
 import requests
 import geocoder
 from datetime import date, timedelta
+import sys
 # import urllib.parse
 
 config = configparser.ConfigParser()
@@ -112,9 +113,6 @@ class Tweets():
         # https://www.geeksforgeeks.org/python-efficient-text-data-cleaning/
         pass
 
-
-
-
 # define stream listener class
 class TwitterStreamListener(tweepy.Stream):
     def __init__(self, api=None):
@@ -130,8 +128,8 @@ class TwitterStreamListener(tweepy.Stream):
         # self.file = open('tweets.txt', 'w')
         self.tweet_list = []
 
-    def toJson(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
+    # def toJson(self):
+    #     return json.dumps(self, default=lambda o: o.__dict__)
     
     def on_status(self, status):
         tweet = status._json
@@ -171,7 +169,7 @@ class TwitterStreamListener(tweepy.Stream):
             return False
 
 
-keywords = dict(news.all_news_df["keywords"])
+# keywords = dict(news.all_news_df["keywords"])
 
 #print(keywords)
 t = Tweets(consumer_key, consumer_secret, access_token, access_token_secret)
