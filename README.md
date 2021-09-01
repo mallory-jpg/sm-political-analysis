@@ -77,7 +77,10 @@ This project uses Tweepy's tweet search method to search for tweets within the p
 This project uses Avilash Kumar's [TikTokAPI](https://github.com/avilash/TikTokAPI-Python). Refer to their GitHub for further information.
 
 ### Common TikTok Streaming Issues:
-* Problems finding the installed module in code editor --> uninstall then reinstall 'from source' (as specified on the PyTikTokAPI GitHub - linked above) directly into project directory
+* Problems finding the installed modules in code editor --> uninstall then reinstall 'from source' (as specified on the PyTikTokAPI GitHub - linked above) directly into project directory
+* Issues with pyppeteer install --> make sure [latest version](https://github.com/pyppeteer/pyppeteer) is installed.
+*     No module `websockets` --> the conda forge installation (not pip/pip3) worked best for me: `conda install -c conda-forge websocket-client` (you need both the websocket-client and websockets itself)
+*     No module named `websockets.exceptions` --> according to [the websockets documentation](https://websockets.readthedocs.io/en/stable/changelog.html) websockets>=9.0 has changes in compatibility 
 
 Check out this project's slide deck ⤵
 ![SM Political Analysis - 4 (2)](https://user-images.githubusercontent.com/65197541/131225593-367e0894-08d3-4fea-ab17-36f274e03c64.png)
