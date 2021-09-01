@@ -45,7 +45,7 @@ _How can we better develop educational materials to meet kids where they are?_
   *Note*: headers and keys/variables in config.ini file don't need to be stored as strings, but when calling them in program, enclose references with quotes
 
 ### To scrape the web without getting blocked:
-Clone the following url into your project directory using Git or checkout with SVN: `https://github.com/tamimibrahim17/List-of-user-agents.git`. These .txt files contain User Agents and are specified by browser (shout out [Timam Ibrahim][https://github.com/tamimibrahim17]!). They will be randomized to avoid detection by web browsers.
+Clone the following url into your project directory using Git or checkout with SVN: `https://github.com/tamimibrahim17/List-of-user-agents.git`. These .txt files contain User Agents and are specified by browser (shout out [Timam Ibrahim](https://github.com/tamimibrahim17)!). They will be randomized to avoid detection by web browsers.
 
 ### To find your `s_v_web_id` & `tt_web_id` for TikTokAPI access:
 1. Go to the TikTok website & login
