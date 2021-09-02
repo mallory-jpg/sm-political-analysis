@@ -1,0 +1,15 @@
+language: python
+#before_script:
+  #- psql -c 'create database travis_ci_test;' -U postgres
+install:
+    - pip install -r requirements.txt
+services:
+  - postgresql
+script:
+    - pytest
+notifications:
+  email:
+    recipients:
+      - mculbert97@gmail.com
+    on_success: never # default: change
+    on_failure: always # default: always 
