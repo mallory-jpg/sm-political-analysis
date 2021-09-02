@@ -62,6 +62,7 @@ class News():
             raise err
         else:
             logging.info('Popular news request successful')
+            print('Popular news request successful')
 
         with open('pop_news.json', 'w') as f:
             # write results to JSON file
@@ -109,6 +110,7 @@ class News():
             raise err
         else:
             logging.info('Top headlines request successful')
+            print('Top headlines request successful')
 
         with open("top_headlines.json", "w") as f:
             # write results to JSON file
@@ -145,7 +147,7 @@ class News():
             logging.error(err, '')
             raise err
         except KeyboardInterrupt as i:
-            logging.critical(i, 'News request interrupted - taking too long')
+            logging.critical(i, 'News request interrupted - taking too long?')
         else:
             logging.info('News request successful')
             # noramlize nested JSON

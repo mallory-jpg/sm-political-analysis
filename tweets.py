@@ -11,6 +11,7 @@ import requests
 import geocoder
 from datetime import date, timedelta
 import sys
+import psycopg2
 # import urllib.parse
 
 config = configparser.ConfigParser()
@@ -107,7 +108,41 @@ class Tweets():
         #pass
         # TODO put tweets into db
         # TODO
-    
+
+# Insert Tweet data into database
+
+
+    def dbConnect(self, user_id, user_name, tweet_id, tweet, retweet_count, hashtags):
+        """Insert tweets directly into database without intermediary dataframe
+        https://www.analyticsvidhya.com/blog/2020/08/analysing-streaming-tweets-with-python-and-postgresql/#h2_6"""
+        self.from_file = "sm-political-analysis/tweets.json" # get from this file and mogrify babyyyy
+
+        conn = psycopg2.connect(host="localhost", database="TwitterDB", port=5432, user= '', password= '') # TODO fill in credentials
+
+        cur = conn.cursor()
+
+        # insert user information 
+        # TODO change db info
+        command = '''INSERT INTO TwitterUser (user_id, user_name) VALUES (%s,%s) ON CONFLICT
+                    (User_Id) DO NOTHING;'''
+        cur.execute(command, (user_id, user_name))
+
+        # insert tweet information
+        command = '''INSERT INTO TwitterTweet (tweet_id, user_id, tweet, retweet_count) VALUES (%s,%s,%s,%s);'''
+        cur.execute(command, (tweet_id, user_id, tweet, retweet_count))
+
+        # insert entity information
+        for i in range(len(hashtags)):
+            hashtag = hashtags[i]
+            command = '''INSERT INTO TwitterEntity (tweet_id, hashtag) VALUES (%s,%s);'''
+            cur.execute(command, (tweet_id, hashtag))
+
+        # Commit changes
+        conn.commit()
+
+        # Disconnect
+        cur.close()
+        conn.close()
     def clean_tweets(self, tweets):
         # use slang.txt
         # https://www.geeksforgeeks.org/python-efficient-text-data-cleaning/
