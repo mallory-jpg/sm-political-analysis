@@ -73,7 +73,7 @@ This project uses Tweepy's tweet search method to search for tweets within the p
 ### Setting Up Kafka Streaming Application (Scala ==> Python)
 `application.conf` file should look like:
 
-```
+  ```
   com.ram.batch {
   spark {
     app-name = <app name>
@@ -86,7 +86,8 @@ This project uses Tweepy's tweet search method to search for tweets within the p
     password = <db pwd>
   }
 }
-```
+  ```
+  
 *Note*: these are strings and must be enclosed in quotation marks.
 * Make sure you customize your connection string url to the database you use
 * The tweetStream Python class invoked in my pipeline includes a Kafka broker: `self.producer = KakfaProducer(bootstrap_servers='localhost')`
