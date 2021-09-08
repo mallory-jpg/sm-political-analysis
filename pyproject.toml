@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "sm-political-analysis"
+version = "0.1.0"
+description = "Compare political news to Twitter & TikTok trends."
+authors = ["mallory-jpg <65197541+mallory-jpg@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+tweepy = "^3.10.0"
+newsapi-python = "^0.2.6"
+requests = "^2.26.0"
+playwright = "^1.14.1"
+PyTikTokAPI = "^0.0.5"
+websocket-client = "^1.2.1"
+pyppeteer = "^0.2.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

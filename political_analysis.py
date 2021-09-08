@@ -19,11 +19,16 @@ import tweepy  # python package for accessing Tweet streaming API
 from tweepy import API
 from tweepy import Stream
 import urllib.parse
+import psycopg2  # alts: SQLalchemy
 from TikTokAPI import TikTokAPI
-# from selenium import webdriver
-import psycopg2  # alts: SQLalchemy - warning: not as simple
+from selenium import webdriver
 from psycopg2 import Error
 import re
+import sys
+import geocoder
+from kafka import KafkaProducer
+from helper_functions import *
+import time
 
 # import program modules
 from database import *
@@ -54,10 +59,8 @@ consumer_secret = c['twitterAuth']['consumer_secret']
 
 
 postgres_db = DataBase(host, username, password)
-
 # connect to server
 postgres_server = postgres_db.create_server_connection()
-
 # connect to social media news db
 connection = postgres_db.create_db_connection(db)
 
@@ -87,36 +90,29 @@ except (ConnectionError) as e:
 news = News(news_api_key)
 # get all news & keywords - takes about 30 seconds
 news.get_all_news()
+keywords = news.get_all_news()
+tw = t.tweet_search(keywords)
 
 # instantiate Tweets class
 t = Tweets(consumer_key, consumer_secret, access_token, access_token_secret)
 # authenticate Tweepy
 auth = t.tweepy_auth()
 
-# # instantiate Tweet Stream Listener
-# listener = TwitterStreamListener()
-# # authenticate stream
-# # tweet_mode="extended")
-# tweet_stream = tweepy.Stream(auth, listener, access_token, access_token_secret)
-# #listener.on_status(tweet_stream)
-# listener.on_data(tweet_stream)
-
 
 tiktok_auth = {
     "s_v_web_id": tiktok_sv_id,  # references variables saved from config file
     "tt_webid": tiktok_tt_id
 }
-
 api = TikTokAPI(cookie=tiktok_auth)
 tiktok_df = news.all_news_df['keywords'].map(api.getVideosByHashtag)
 
 # add late-arriving twitter data
-# tweet search instead of stream
-keywords = news.get_all_news()
-tw = t.tweet_search(keywords)
+# tweet stream
+stream = tweetStream(consumer_key, consumer_secret,
+                     access_token, access_token_secret)
 
 # mogrify stream
-# postgres_db.execute_mogrify(connection, filtered_stream, 'stream_tweets')
+postgres_db.execute_mogrify(connection, stream, 'stream_tweets')
 # mogrify batch tweets
 postgres_db.execute_mogrify(connection, tw, 'batch_tweets')
 # execute mogrify - insert news df into database

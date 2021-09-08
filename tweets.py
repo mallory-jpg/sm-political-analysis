@@ -2,16 +2,18 @@ from news import *
 
 import tweepy  # python package for accessing Tweet streaming API
 from tweepy import API
-from tweepy import Stream
+# from tweepy import Stream
 import json
 import logging
 import pandas as pd
 import configparser
 import requests
+from kafka import KafkaProducer # to read stream
 import geocoder
 from datetime import date, timedelta
 import sys
 import psycopg2
+import time
 # import urllib.parse
 
 config = configparser.ConfigParser()
@@ -204,11 +206,53 @@ class TwitterStreamListener(tweepy.Stream):
             return False
 
 
-# keywords = dict(news.all_news_df["keywords"])
-
-#print(keywords)
 t = Tweets(consumer_key, consumer_secret, access_token, access_token_secret)
 auth = t.tweepy_auth()
-# search_df = t.tweet_search(keywords)
 
 
+class tweetStream(Tweets):
+    def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret, api=None):
+        super(Tweets, self).__init__()
+        # consumer_key, consumer_secret, access_token, access_token_secret
+        self.consumer_key = consumer_key
+        self.consumer_secret = consumer_secret
+        self.access_token = access_token
+        self.access_token_secret = access_token_secret
+
+        # authenticate tweepy
+        auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
+        # set access token & secret
+        auth.set_access_token(self.access_token, self.access_token_secret)
+
+        # create API object
+        api = tweepy.API(auth)
+
+        # configure kafka
+        self.producer = KafkaProducer(bootstrap_servers='localhost')
+
+    def get_twitter_data(self, news_keywords):
+        api = self.api
+        self.news_keywords = news_keywords
+        self.topic_name = 'tweet-stream'
+        important_fields = ['created_at', 'id', 'id_str', 'text',
+                            'retweet_count', 'favorite_count', 'favorited', 'retweeted', 'lang']
+        
+        print("Streaming tweets matching keywords from news search")
+        for keys in self.news_keywords:
+            keywords = list(keys)
+            for word in keywords:
+                res = api.search_tweets(q=str(
+                    word) + " -filter:retweets", lang='en')
+                for tweet in res: # iterate over results
+                    json_tweet = {k: tweet._json[k] for k in important_fields} # extract interesting fields
+                    json_tweet['text'] = json_tweet['text'].replace("'","").replace("\"","").replace("\n","")
+                    self.producer.send(self.topic_name, str.encode(json.dumps(json_tweet)))
+
+    def periodic_batch(self, interval):
+        """Get tweet data every specified interval. 
+        :example: 'self.periodic_batch(60 * 0.15)' to get data every few seconds"""
+        
+        while True:
+            self.get_twitter_data(self.news_keywords)
+            time.sleep(interval)
+    
