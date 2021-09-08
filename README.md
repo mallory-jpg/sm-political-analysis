@@ -72,6 +72,7 @@ This project uses Tweepy's tweet search method to search for tweets within the p
 
 ### Setting Up Kafka Streaming Application (Scala ==> Python)
 `application.conf` file should look like:
+
 ```
   com.ram.batch {
   spark {
@@ -102,6 +103,7 @@ Scala applications require `'application'.sbt` files that include the name of th
 
     libraryDependencies += "org.apache.spark" %% "spark-core" % "3.1.1"
     ```
+    
 * Find your Spark version by using `spark-submit --version` on the command line.
 
 **M1 Processor Issues** 
