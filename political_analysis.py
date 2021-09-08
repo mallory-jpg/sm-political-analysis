@@ -110,6 +110,7 @@ tiktok_df = news.all_news_df['keywords'].map(api.getVideosByHashtag)
 # tweet stream
 stream = tweetStream(consumer_key, consumer_secret,
                      access_token, access_token_secret)
+stream.periodic_batch(20) # get periodic updates
 
 # mogrify stream
 postgres_db.execute_mogrify(connection, stream, 'stream_tweets')
