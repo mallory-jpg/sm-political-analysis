@@ -44,6 +44,7 @@ _How can we better develop educational materials to meet kids where they are?_
   ```
   *Note*: headers and keys/variables in config.ini file don't need to be stored as strings, but when calling them in program, enclose references with quotes
 
+
 ### To scrape the web without getting blocked:
 Clone the following url into your project directory using Git or checkout with SVN: `https://github.com/tamimibrahim17/List-of-user-agents.git`. These .txt files contain User Agents and are specified by browser (shout out [Timam Ibrahim](https://github.com/tamimibrahim17)!). They will be randomized to avoid detection by web browsers.
 
@@ -69,17 +70,69 @@ With data from social media adding a pop-cultural context to political news, we 
 
 This project uses Tweepy's tweet search method to search for tweets within the past seven (7) days using the keywords produced from the `.get_all_news()` method. A separate Tweepy Stream Listener subclass catches tweets (statuses) that contain our keywords of interest as they are tweeted. The max stream rate for Twitter's API (upon which Tweepy is based) is 450.
 
+### Setting Up Kafka Streaming Application (Scala ==> Python)
+`application.conf` file should look like:
+```
+  com.ram.batch {
+  spark {
+    app-name = <app name>
+    master = "local"
+    log-level = "INFO"
+  }
+  postgres { 
+    url = "postgresql://localhost/<db name>"
+    username = <db user>
+    password = <db pwd>
+  }
+}
+```
+*Note*: these are strings and must be enclosed in quotation marks.
+* Make sure you customize your connection string url to the database you use
+* The tweetStream Python class invoked in my pipeline includes a Kafka broker: `self.producer = KakfaProducer(bootstrap_servers='localhost')`
+* The broker & the Kafka streaming application are two separate files & entities
+
+Scala applications require `'application'.sbt` files that include the name of the app, the version, the scalaVersion, and library dependencies:
+
+    ```
+    name := "Tweet Stream"
+
+    version := "1.0"
+
+    scalaVersion := "3.0.2"
+
+    libraryDependencies += "org.apache.spark" %% "spark-core" % "3.1.1"
+    ```
+* Find your Spark version by using `spark-submit --version` on the command line.
+
+**M1 Processor Issues** 
+* I had to find a compatible SDK to install sbt:
+  ```
+    curl -s "https://get.sdkman.io" | zsh 
+    source "$HOME/.sdkman/bin/sdkman-init.sh" 
+    sdk version
+    sdk install java
+    sdk install sbt
+    sbt compile
+  ```
+* Then finally run `sbt compile` on the command line from my project directory. 
 ### Common Tweet Streaming Issues:
 * Make sure any json file that is being used to store tweets is opened with the 'a' designator for 'append' or else each tweet will overwrite the last
+* If sbt won't compile, ensure that your .sbt file dependencies are the correct versions
+* Make sure your application directory mirrors what is found in the [Spark documentation](http://spark.apache.org/docs/1.2.0/quick-start.html#self-contained-applications) so it can compile properly. 
 
 ## Getting TikToks
 
 This project uses Avilash Kumar's [TikTokAPI](https://github.com/avilash/TikTokAPI-Python). Refer to their GitHub for further information.
 
 ### Common TikTok Streaming Issues:
+<<<<<<< HEAD
+* Problems finding the installed module in code editor --> uninstall then reinstall 'from source' (as specified on the PyTikTokAPI GitHub - linked above) directly into project directory
+* Missing/deprecated dependencies for the API (esp. pyppeteer) --> install outside of virtual environment from source
+=======
 * Problems finding the installed modules in code editor --> uninstall then reinstall 'from source' (as specified on the PyTikTokAPI GitHub - linked above) directly into project directory
 * Issues with pyppeteer install --> make sure [latest version](https://github.com/pyppeteer/pyppeteer) is installed; using Conda saved my butt here: `conda install -c conda-forge pyppeteer`
 * No module `websockets` --> make sure to install the module using the -m command line flag
+>>>>>>> 5a93bbb89da18b69716938cf0cc219c798b6f51f
 
 Check out this project's slide deck ⤵
 ![SM Political Analysis - 4 (2)](https://user-images.githubusercontent.com/65197541/131225593-367e0894-08d3-4fea-ab17-36f274e03c64.png)
