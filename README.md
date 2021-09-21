@@ -128,14 +128,7 @@ Scala applications require `'application'.sbt` files that include the name of th
 This project uses Avilash Kumar's [TikTokAPI](https://github.com/avilash/TikTokAPI-Python). Refer to their GitHub for further information.
 
 ### Common TikTok Streaming Issues:
-<<<<<<< HEAD
-* Problems finding the installed module in code editor --> uninstall then reinstall 'from source' (as specified on the PyTikTokAPI GitHub - linked above) directly into project directory
-* Missing/deprecated dependencies for the API (esp. pyppeteer) --> install outside of virtual environment from source
-=======
-* Problems finding the installed modules in code editor --> uninstall then reinstall 'from source' (as specified on the PyTikTokAPI GitHub - linked above) directly into project directory
-* Issues with pyppeteer install --> make sure [latest version](https://github.com/pyppeteer/pyppeteer) is installed; using Conda saved my butt here: `conda install -c conda-forge pyppeteer`
-* No module `websockets` --> make sure to install the module using the -m command line flag
->>>>>>> 5a93bbb89da18b69716938cf0cc219c798b6f51f
+* TBA
 
 Check out this project's slide deck ⤵
 ![SM Political Analysis - 4 (2)](https://user-images.githubusercontent.com/65197541/131225593-367e0894-08d3-4fea-ab17-36f274e03c64.png)
